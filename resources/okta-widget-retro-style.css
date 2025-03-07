@@ -1,0 +1,433 @@
+/* Retro 80s Theme - Okta Sign-In Widget CSS */
+
+/* Import your fonts if not already in the main app */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap');
+
+/* Variables to match main theme */
+:root {
+  --neon-pink: #ff00ff;
+  --neon-blue: #00ffff;
+  --neon-purple: #b967ff;
+  --neon-green: #00ff9f;
+  --dark-bg: #0b0b1a;
+  --darker-bg: #050514;
+  --grid-color: rgba(121, 0, 255, 0.2);
+  --header-font: 'Orbitron', sans-serif;
+  --body-font: 'Roboto', sans-serif;
+}
+
+/* Okta Container */
+#okta-sign-in.auth-container {
+  background-color: transparent !important;
+  border: 1px solid var(--neon-purple) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 15px rgba(185, 103, 255, 0.5) !important;
+  font-family: var(--body-font) !important;
+  max-width: 500px !important;
+  margin: 0 auto !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#okta-sign-in.auth-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /*
+  background-image: 
+    linear-gradient(0deg, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 25px 25px;
+  */
+  z-index: -1;
+  opacity: 0.3;
+}
+
+/* Okta Header */
+#okta-sign-in .auth-header {
+  /*
+  display:none;
+  visibility:hidden;
+  */
+  /*
+  background-color: var(--darker-bg) !important;
+  */
+  border-bottom: 2px solid var(--neon-blue) !important;
+}
+
+#okta-sign-in .auth-org-logo {
+  max-width: 200px !important;
+  max-height: 60px !important;
+  margin: 0 auto !important;
+}
+
+/* Okta Form Elements */
+#okta-sign-in .o-form-head {
+  font-family: var(--header-font) !important;
+  color: white !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  text-shadow: 
+    0 0 5px var(--neon-blue) !important,
+    0 0 10px var(--neon-blue) !important;
+  text-align: center !important;
+  margin-bottom: 20px !important;
+
+}
+
+#okta-sign-in .o-form-fieldset {
+  border: none !important;
+}
+
+#okta-sign-in .o-form-label {
+  color: white !important;
+  font-weight: 500 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  font-size: 0.8rem !important;
+}
+
+#okta-sign-in .o-form-input {
+  /*background-color: rgba(5, 5, 20, 0.8) !important;*/
+  border: none !important;
+  border-radius: 0 !important;
+  color: white !important;
+  padding: 0 !important;
+  transition: all 0.3s ease !important;
+}
+
+#okta-sign-in .o-form-input:focus {
+  border-color: var(--neon-blue) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+  outline: none !important;
+}
+
+/* Okta Buttons */
+#okta-sign-in .button,
+#okta-sign-in .button-primary {
+  background: transparent !important;
+  border: 2px solid var(--neon-blue) !important;
+  color: white !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  font-weight: bold !important;
+  padding: 10px 20px !important;
+  border-radius: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  z-index: 1 !important;
+  transition: all 0.3s ease !important;
+}
+
+#okta-sign-in .button-primary:hover {
+  color: white !important;
+  background-color: rgba(0, 255, 255, 0.2) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5) !important;
+}
+
+#okta-sign-in .button.link-button {
+  border: none !important;
+  color: var(--neon-pink) !important;
+  background: none !important;
+  text-shadow: 0 0 5px var(--neon-pink) !important;
+}
+
+#okta-sign-in .button.link-button:hover {
+  text-shadow: 0 0 8px var(--neon-pink) !important;
+  background: none !important;
+}
+
+/* Okta Error Messages */
+#okta-sign-in .o-form-error-container .o-form-error {
+  background-color: rgba(255, 0, 255, 0.1) !important;
+  border: 1px solid var(--neon-pink) !important;
+  border-radius: 0 !important;
+  color: white !important;
+}
+
+/* Okta Footer */
+#okta-sign-in .auth-footer {
+  /*background-color: var(--darker-bg) !important;*/
+  border-top: 2px solid var(--neon-blue) !important;
+  padding: 10px !important;
+}
+
+/* Okta Social Auth (if used) */
+#okta-sign-in .social-auth-button {
+  background: transparent !important;
+  border: 2px solid var(--neon-purple) !important;
+  color: white !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  margin-bottom: 10px !important;
+  border-radius: 0 !important;
+  transition: all 0.3s ease !important;
+}
+
+#okta-sign-in .social-auth-button:hover {
+  background-color: rgba(185, 103, 255, 0.2) !important;
+  box-shadow: 0 0 15px rgba(185, 103, 255, 0.5) !important;
+}
+
+/* Okta MFA Challenge (if used) */
+#okta-sign-in .mfa-verify {
+  background-color: transparent !important;
+  /*
+  background-color: rgba(11, 11, 26, 0.7) !important;
+  */
+}
+
+#okta-sign-in .mfa-heading {
+  font-family: var(--header-font) !important;
+  color: white !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  text-shadow: 0 0 5px var(--neon-purple) !important;
+}
+
+/* Animation for sign-in widget appearance */
+#okta-sign-in.auth-container {
+  animation: glow-enter 1s ease-out forwards !important;
+}
+
+@keyframes glow-enter {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Additional Form Styling */
+#okta-sign-in input[type="checkbox"] {
+  border: 1px solid var(--neon-blue) !important;
+  background-color: var(--darker-bg) !important;
+}
+
+#okta-sign-in input[type="checkbox"]:checked {
+  background-color: var(--neon-blue) !important;
+}
+
+/* Password toggle button */
+#okta-sign-in .password-toggle {
+  color: var(--neon-green) !important;
+}
+
+/* Spinner Animation */
+#okta-sign-in .spinner {
+  border-color: var(--neon-blue) !important;
+  border-top-color: var(--neon-pink) !important;
+}
+
+/* Separation lines 
+#okta-sign-in .separation-line {
+
+  height: 2px !important;
+  margin: 20px 0 !important;
+  border: none !important;
+}
+*/
+
+/* Okta Factor List */
+#okta-sign-in .factors-dropdown {
+  background-color: rgba(5, 5, 20, 0.8) !important;
+  border: 1px solid var(--neon-purple) !important;
+  border-radius: 0 !important;
+}
+
+#okta-sign-in .dropdown-list-option {
+  border-bottom: 1px solid var(--neon-purple) !important;
+  color: white !important;
+}
+
+#okta-sign-in .dropdown-list-option:hover {
+  background-color: rgba(185, 103, 255, 0.2) !important;
+}
+
+/* Registration form (if used) */
+#okta-sign-in .registration-container {
+  border-top: 2px solid var(--neon-pink) !important;
+  margin-top: 20px !important;
+  padding-top: 20px !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #okta-sign-in.auth-container {
+    width: 90% !important;
+    margin: 0 auto !important;
+  }
+  
+  #okta-sign-in .o-form-head {
+    font-size: 1.2rem !important;
+  }
+}
+
+/* Additional overrides for transparent background */
+#okta-sign-in .auth-content {
+  background-color: transparent !important;
+}
+
+#okta-sign-in h3, 
+#okta-sign-in h2, 
+#okta-sign-in h1 {
+  letter-spacing: inherit !important;
+  text-transform: inherit !important;
+}
+#okta-sign-in .auth-content-inner {
+  background-color: rgba(11, 11, 26, 0.7) !important;
+}
+
+/* Override any Okta default background colors */
+#okta-sign-in div, 
+#okta-sign-in section,
+#okta-sign-in form,
+#okta-sign-in .o-form-content {
+  background-color: transparent !important;
+}
+
+/* Fix for "or" text with white background */
+#okta-sign-in .auth-divider {
+  background-color: transparent !important;
+}
+
+#okta-sign-in .auth-divider .auth-divider-text {
+  background-color: transparent !important;
+  color: white !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+/* Additional selectors to ensure complete coverage for removing borders and rounded corners */
+#okta-sign-in .o-form-fieldset-container,
+#okta-sign-in .text-input,
+#okta-sign-in .chzn-container-single .chzn-single,
+#okta-sign-in .footer-container,
+#okta-sign-in .body-container {
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+/* Important overrides for any Okta styling that might use !important themselves */
+#okta-sign-in *[class*="border-radius"],
+#okta-sign-in *[style*="border-radius"] {
+  border-radius: 0 !important;
+}
+
+#okta-sign-in *[class*="border"],
+#okta-sign-in *[style*="border"] {
+  border: none !important;
+}
+
+/* Additional rules to ensure text inputs have no rounded corners or borders */
+#okta-sign-in input[type="text"],
+#okta-sign-in input[type="password"],
+#okta-sign-in input[type="email"],
+#okta-sign-in input[type="tel"],
+#okta-sign-in select,
+#okta-sign-in textarea,
+#okta-sign-in .custom-checkbox,
+#okta-sign-in .o-form-input-name-username input,
+#okta-sign-in .o-form-input-name-password input {
+  /*
+  border: var(--neon-blue) 1px solid  !important;
+  */
+  border: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--neon-pink) 20%, 
+    var(--neon-blue) 50%, 
+    var(--neon-purple) 80%, 
+    transparent 100%) 1px solid !important;
+  border-radius: 0 !important;
+  /*background-color: rgba(5, 5, 20, 0.8) !important;*/
+  color: white !important;
+}
+
+/* Ensure input containers don't have borders or rounded corners */
+#okta-sign-in .input-container,
+#okta-sign-in .okta-form-input-field,
+#okta-sign-in .input-icon-container {
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Fix for any background colors on input boxes */
+#okta-sign-in .input-fix,
+#okta-sign-in .input-tooltip,
+#okta-sign-in .input-wrapper,
+#okta-sign-in .o-form-control {
+  border-radius: 0 !important;
+  border: none !important;
+  background-color: rgba(5, 5, 20, 0.8) !important;
+}
+
+/* Fix padding for specific input fields */
+#okta-sign-in .okta-form-input-field input, 
+#okta-sign-in .o-form-input-name-username input, 
+#okta-sign-in .o-form-input-name-password input,
+#okta-sign-in input[type="text"],
+#okta-sign-in input[type="password"],
+#okta-sign-in input[type="email"] {
+  padding: 8px 10px !important;
+}
+#okta-sign-in div.separation-line::before {
+  border: none !important;
+
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--neon-pink) 20%, 
+    var(--neon-blue) 50%, 
+    var(--neon-purple) 80%, 
+    transparent 100%) !important;
+    height: 1px;
+  
+    /*border-top: 1px solid #ddd;*/
+/*  
+      border-top: 2px;
+      border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+  
+  font-size: 13px;
+    content: "";
+    margin: 0 auto;
+    position: absolute;
+    top: 16px !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+*/
+  
+}
+#okta-sign-in .separation-line span {
+  background-color: var(--darker-bg) !important;
+  border: 1px solid #8d8d8d !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  color: #ffffff !important;
+}
+
+div.retro-login-container {
+  min-height: 585px;
+}
+
+div.retro-login-container #okta-sign-in .authenticator-verify-list .authenticator-description>di {
+  margin: 0;
+}
+div.retro-login-container #okta-sign-in .button {
+  padding: 0 !important;
+  letter-spacing: normal !important;
+}
+div.retro-login-container #okta-sign-in .button.link-button {
+  display: inherit;  
+}
+div.retro-login-container #okta-sign-in.auth-container .button {
+  box-shadow: none;  
+}
+div.retro-login-container #okta-sign-in .piv-button.link-button {
+  background-color: black;
+  border: 2px solid var(--neon-pink);
+  color: var(--neon-pink);
+  border-radius: 0;
+}

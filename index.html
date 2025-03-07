@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Neuro-Auth 3000</title>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/resources/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/resources/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/resources/favicon-16x16.png">
+  <link rel="manifest" href="/resources/site.webmanifest">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet" crossorigin="anonymous">
+  
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" integrity="sha384-c9MVH4yRDZMY+bSlECVISp9U4xBl1dKb5z4x8IgF6lBKTHsh1AtxHBfHiiA+S/Nr" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  
+  <!-- Load React, ReactDOM, and Babel -->
+<!--
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com//react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.9/babel.min.js" integrity="sha384-pKNXKj7jF9BNMkQyGWg5YLfoPyqBa/gf7wjTSoTGQlwxbZB+sabJuKyOHR6JQvTd" crossorigin="anonymous"></script>
+-->
+<script src="https://unpkg.com/react@18/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" integrity="sha384-pKNXKj7jF9BNMkQyGWg5YLfoPyqBa/gf7wjTSoTGQlwxbZB+sabJuKyOHR6JQvTd" crossorigin="anonymous"></script>
+  <!-- Load Okta Auth JS and Sign-In Widget -->
+  <script src="https://global.oktacdn.com/okta-auth-js/7.11.0/okta-auth-js.min.js" integrity="sha384-eL9cvPQ1sm9dvgMw9OMOb8inxlPtA265VHP53qZmskmaK9pZ3VDo098+MAAjoAga" crossorigin="anonymous"></script>
+  <script src="https://global.oktacdn.com/okta-signin-widget/7.29.0/js/okta-sign-in.min.js" integrity="sha384-mlwNMXRI4RGesIx3qUsWBKiO6/q5OBLrzwYLKZ36ih270ff8TT3DQiMXOG5s/qx7" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://global.oktacdn.com/okta-signin-widget/7.29.0/css/okta-sign-in.min.css" integrity="sha384-hWO50VHqC4T+PDnYbDX7gbW0OrGRVz4SfhJd9fnSqNeeTu86P4T71K1r3zw9QvgH" crossorigin="anonymous">
+  
+  <!-- Custom Retro CSS -->
+  <link href="resources/retro-style.css" rel="stylesheet">
+  <!-- Okta Widget Custom Styling -->
+  <link href="resources/okta-widget-retro-style.css" rel="stylesheet">
+
+  <script src="lib/cbor.js"></script>
+  <script src="lib/totp.js"></script>
+  <script src="lib/util.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <!-- Core Dependencies -->
+  <script type="text/babel" src="src/config.js"></script>
+  <script type="text/babel" src="src/OktaAuth.js"></script>
+  <script type="text/babel" src="src/OktaSession.js"></script>
+
+  <!-- Components -->
+  <script type="text/babel" src="src/LogMeInButton.js"></script>
+  <script type="text/babel" src="src/MfaButton.js"></script>
+  <script type="text/babel" src="src/Login.js"></script>
+  <script type="text/babel" src="src/Home.js"></script>
+  <script type="text/babel" src="src/Profile.js"></script>
+  <script type="text/babel" src="src/DataManager.js"></script>
+  <script type="text/babel" src="src/Settings.js"></script>
+  <script type="text/babel" src="src/Navbar.js"></script>
+  <script type="text/babel" src="src/App.js"></script>
+
+  <!-- Initialize App -->
+  <script type="text/babel">
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
