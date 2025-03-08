@@ -37,46 +37,74 @@ const sample = [
   0.03, 0.03, 0.04, 0.03, 0.03
 ];
 
-const jumpTime = 125;
+const TARGET_FPS = 5; // We'll target 30fps for smooth animation
+const FRAME_DURATION = 1000 / TARGET_FPS;
 
 const PerlinNoiseAudioVisualizer = () => {
   const spectrumRef = React.useRef(null);
   const segmentsRef = React.useRef([]);
+  const animationFrameRef = React.useRef(null);
+  const noiseRef = React.useRef(null);
+  const baseValuesRef = React.useRef([]);
+  const lastFrameTimeRef = React.useRef(0);
 
   React.useEffect(() => {
     if (!spectrumRef.current) return;
 
-    // Create segments
+    // Create segments and store them in a document fragment first
+    const fragment = document.createDocumentFragment();
     sample.forEach((_, i) => {
       const segment = document.createElement('div');
       segment.classList.add('spectrum-segment');
       segmentsRef.current[i] = segment;
-      spectrumRef.current.appendChild(segment);
+      fragment.appendChild(segment);
+    });
+    // Single DOM operation to add all segments
+    spectrumRef.current.appendChild(fragment);
+
+    // Create the noise generator and precalculate base values
+    noiseRef.current = new Perlin();
+    baseValuesRef.current = sample.map((_, i) => {
+      return (noiseRef.current.getValue(i * 0.1) + 1) / 2;
     });
 
-    const jump = () => {
-      const noise = new Perlin();
-      
+    // Function to update segment values
+    const updateSegments = (timestamp) => {
+      // Control frame rate
+      if (timestamp - lastFrameTimeRef.current < FRAME_DURATION) {
+        animationFrameRef.current = requestAnimationFrame(updateSegments);
+        return;
+      }
+
+      // Update last frame time
+      lastFrameTimeRef.current = timestamp;
+
+      // Batch transform updates
       segmentsRef.current.forEach((segmentElement, i) => {
         let value = 
-          // normalize [-1, 1] => [0, 1]
-          (noise.getValue(i * 0.1) + 1) / 2 
-          // multiply by random value
+          baseValuesRef.current[i]
           * Math.random()
-          * sample[i];
+          * sample[i]
+          * 1.5;
         
-        // Adding a minimum
         value = value < 0.01 ? 0.01 : value;
         
+        // Use transform3d for hardware acceleration
         segmentElement.style.transform = `scale3d(1, ${value}, 1)`;
       });
+
+      // Request next frame
+      animationFrameRef.current = requestAnimationFrame(updateSegments);
     };
 
-    const intervalId = setInterval(() => requestAnimationFrame(jump), jumpTime);
+    // Start the animation
+    animationFrameRef.current = requestAnimationFrame(updateSegments);
 
     // Cleanup
     return () => {
-      clearInterval(intervalId);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       if (spectrumRef.current) {
         spectrumRef.current.innerHTML = '';
       }

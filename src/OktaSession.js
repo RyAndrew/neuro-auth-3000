@@ -1,10 +1,9 @@
 const OktaSession = () => {
   const [session, setSession] = React.useState(null)
    
-  const { authClient } = useAuthContext();
+  const { authClient, authState } = useAuthContext();
   
   function checkOktaSession() {
-
       //oktaSessionLastCheck = new Date()
 
       //check if okta session is active currently
@@ -18,6 +17,7 @@ const OktaSession = () => {
             throw err
         })
   }
+  
   function clickCloseSession(){
     authClient.session.close().then(() => {
         checkOktaSession()
@@ -31,8 +31,13 @@ const OktaSession = () => {
     checkOktaSession()
   }, []);
   
+  // Don't render anything while auth state is loading
+  if (authState.isLoading) {
+    return null;
+  }
+  
   return (
-    <div className="container mt-3">
+    <div className="container mt-3 mb-4">
       <div className="row">
         <div className="col-12">
           Okta Session {session?.status === 'ACTIVE' ? ( 'ACTIVE' ) : ( 'INACTIVE' )}
