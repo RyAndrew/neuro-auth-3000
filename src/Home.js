@@ -43,6 +43,7 @@ const Home = () => {
             <div className="card-body text-center">
               <h3 className="neon-text-purple">Quantum Protection</h3>
               <p className="neon-text">Defense matrices guarding your digital identity.</p>
+              <PerlinNoiseAudioVisualizer />
             </div>
           </div>
         </div>
