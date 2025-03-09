@@ -35,8 +35,9 @@ const Settings = () => {
     return null; // Will redirect via useEffect
   }
 
-  // Get the issuer URL from the auth client
-  const settingsUrl = authClient.options.issuer + '/account-settings/security';
+  // Get the issuer URL from the auth client and extract domain
+  const issuerUrl = new URL(authClient.options.issuer);
+  const settingsUrl = `${issuerUrl.protocol}//${issuerUrl.host}/account-settings/security';`;
 
   return (
     <div className="settings-container">
