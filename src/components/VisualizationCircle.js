@@ -5,7 +5,7 @@ const VisualizationCircle = () => {
   const [velocity, setVelocity] = React.useState(0.5);
   const [amplitude, setAmplitude] = React.useState(0.8);
   const [clearInterval, setClearInterval] = React.useState(30);
-  const [undulateWavelength, setUndulateWavelength] = React.useState(false);
+  const [undulateWavelength, setUndulateWavelength] = React.useState(true);
   const [undulateVelocity, setUndulateVelocity] = React.useState(false);
   const [undulateAmplitude, setUndulateAmplitude] = React.useState(false);
   const timeRef = React.useRef(0);
@@ -156,7 +156,7 @@ const VisualizationCircle = () => {
         <div className="controls">
           <div className="control-group">
             <div className="control-item">
-              <label className="control-label">Wavelength</label>
+              <label className="control-label">H Wave Len</label>
               <div className="control-input-group">
                 <input
                   className="control-slider"
