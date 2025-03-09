@@ -1,0 +1,24 @@
+.totp-button {
+  min-width: 120px;
+}
+
+.mfa-totp-textfield {
+  background-color: #f8f9fa;
+}
+
+.totp-button.btn-retro {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.totp-button.btn-retro:hover {
+  background-color: #0056b3;
+}
+
+.totp-button.btn-retro:active {
+  background-color: #004085;
+} 

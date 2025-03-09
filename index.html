@@ -37,10 +37,9 @@
   <!-- p5.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" integrity="sha512-uaz5GpnQoE6t5echKlX8P52czvsIGgLPcvlzfvRubLZ1Hp8JemUDnbUiAahbVtPb+jUVrNETuXvAhDDF/N3M4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   
-  <!-- Custom Retro CSS -->
-  <link href="resources/retro-style.css" rel="stylesheet">
-  <!-- Okta Widget Custom Styling -->
-  <link href="resources/okta-widget-retro-style.css" rel="stylesheet">
+  <!-- Application Styles -->
+  <link href="src/styles/style.css" rel="stylesheet">
+  <link href="src/styles/okta-widget-style.css" rel="stylesheet">
 
   <script src="lib/cbor.js"></script>
   <script src="lib/totp.js"></script>
@@ -55,16 +54,20 @@
   <script type="text/babel" src="src/OktaSession.js"></script>
 
   <!-- Components -->
-  <script type="text/babel" src="src/LogMeInButton.js"></script>
-  <script type="text/babel" src="src/MfaButton.js"></script>
-  <script type="text/babel" src="src/Login.js"></script>
-  <script type="text/babel" src="src/Home.js"></script>
-  <script type="text/babel" src="src/Profile.js"></script>
-  <script type="text/babel" src="src/DataManager.js"></script>
-  <script type="text/babel" src="src/Settings.js"></script>
-  <script type="text/babel" src="src/Navbar.js"></script>
-  <script type="text/babel" src="src/PerlinNoiseAudioVisualizer.js"></script>
-  <script type="text/babel" src="src/PerlinCircleVisualizer.js"></script>
+  <script type="text/babel" src="src/components/LogMeInButton.js"></script>
+  <script type="text/babel" src="src/components/TotpButton.js"></script>
+  
+  <!-- Pages -->
+  <script type="text/babel" src="src/pages/Login.js"></script>
+  <script type="text/babel" src="src/pages/Home.js"></script>
+  <script type="text/babel" src="src/pages/Profile.js"></script>
+  <script type="text/babel" src="src/pages/Settings.js"></script>
+  
+  <!-- Other Components -->
+  <script type="text/babel" src="src/components/DataManager.js"></script>
+  <script type="text/babel" src="src/components/Navbar.js"></script>
+  <script type="text/babel" src="src/components/VisualizationAudio.js"></script>
+  <script type="text/babel" src="src/components/VisualizationCircle.js"></script>
   <script type="text/babel" src="src/App.js"></script>
 
   <!-- Initialize App -->

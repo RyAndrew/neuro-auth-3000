@@ -1,4 +1,4 @@
-const PerlinCircleVisualizer = () => {
+const VisualizationCircle = () => {
   const sketchRef = React.useRef(null);
   const p5Ref = React.useRef(null);
   const [wavelength, setWavelength] = React.useState(128);

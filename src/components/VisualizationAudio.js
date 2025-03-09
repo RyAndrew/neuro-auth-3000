@@ -40,7 +40,7 @@ const sample = [
 const TARGET_FPS = 5; // We'll target 30fps for smooth animation
 const FRAME_DURATION = 1000 / TARGET_FPS;
 
-const PerlinNoiseAudioVisualizer = () => {
+const VisualizationAudio = () => {
   const spectrumRef = React.useRef(null);
   const segmentsRef = React.useRef([]);
   const animationFrameRef = React.useRef(null);

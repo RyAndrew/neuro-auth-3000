@@ -1,4 +1,4 @@
-const MfaButton = ({totpSeed}) => {
+const TotpButton = ({totpSeed}) => {
   const [totpResult, setTotpResult] = React.useState('');
    
   async function clickMfa(){
@@ -13,7 +13,7 @@ const MfaButton = ({totpSeed}) => {
   }
   
   return (
-    <div className="mfa-button container mt-3">
+    <div className="totp-button container mt-3">
       <div className="row">
         <div className="col-12">
           <div className="input-group">
@@ -37,4 +37,4 @@ const MfaButton = ({totpSeed}) => {
       </div>
     </div>
   );
-};
+}; 

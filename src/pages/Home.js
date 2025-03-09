@@ -21,7 +21,7 @@ const Home = () => {
           <div className="jumbotron home-jumbotron glow-enter pt-3">
               <h2 className="text-center neon-text-purple mb-4">COHERENCE WAVE ESTABLISHED</h2>
               <p className="text-center home-welcome-text neon-text mb-4">Welcome back, <strong className="neon-text-pink">{authState.user?.name}</strong></p>
-              <PerlinCircleVisualizer />
+              <VisualizationCircle />
           </div>
           
           <div className="row mt-5">
@@ -83,7 +83,7 @@ const Home = () => {
                     <h3 className="neon-text-purple">Quantum Protection</h3>
                     <p className="neon-text">Defense matrices guarding your digital identity.</p>
                   </div>
-                  <PerlinNoiseAudioVisualizer />
+                  <VisualizationAudio />
                 </div>
               </div>
             </div>
