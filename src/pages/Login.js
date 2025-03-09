@@ -23,6 +23,9 @@ const Login = () => {
       el: widgetRef.current,
       clientId: oktaConfig.clientId,
       redirectUri: oktaConfig.redirectUri,
+      features:{
+        autoFocus: false,
+      },
       authParams: {
         issuer: oktaConfig.issuer,
         scopes: oktaConfig.scopes
