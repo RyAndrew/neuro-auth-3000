@@ -2,23 +2,68 @@
   min-width: 120px;
 }
 
-.mfa-totp-textfield {
-  background-color: #f8f9fa;
+input.mfa-totp-textfield {
+  background-color: var(--darker-bg) !important;
+  font-family: monospace;
+  text-align: center;
+  font-size: 1.4em;
+  color: var(--neon-blue) !important;
+  text-shadow: 0 0 5px var(--neon-blue);
 }
 
 .totp-button.btn-retro {
-  background-color: #007bff;
+  background: transparent;
+  border: 2px solid var(--neon-purple);
   color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: bold;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.totp-button.btn-retro::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(185, 103, 255, 0.3), transparent);
+  transition: all 0.5s ease;
+  z-index: -1;
 }
 
 .totp-button.btn-retro:hover {
-  background-color: #0056b3;
+  color: white;
+  box-shadow: 0 0 15px rgba(185, 103, 255, 0.5);
+}
+
+.totp-button.btn-retro:hover::before {
+  left: 100%;
 }
 
 .totp-button.btn-retro:active {
-  background-color: #004085;
+  background-color: rgba(185, 103, 255, 0.2);
+}
+
+.btn-retro-secondary {
+  border: 2px solid var(--neon-pink) !important;
+  background: transparent !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-retro-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 0, 255, 0.2) !important;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.5) !important;
+}
+
+.btn-retro-secondary:disabled {
+  opacity: 0.5;
+  border-color: rgba(255, 0, 255, 0.3) !important;
 } 
