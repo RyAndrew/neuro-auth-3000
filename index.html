@@ -50,14 +50,18 @@
 <body>
   <div id="root"></div>
   
-  <!-- Core Dependencies -->
   <script type="text/babel" src="config.js"></script>
-  <script type="text/babel" src="src/OktaAuth.js"></script>
-  <script type="text/babel" src="src/OktaSession.js"></script>
+  <script type="text/babel" src="src/App.js"></script>
 
   <!-- Components -->
   <script type="text/babel" src="src/components/LogMeInButton.js"></script>
   <script type="text/babel" src="src/components/TotpButton.js"></script>
+  <script type="text/babel" src="src/components/OktaAuth.js"></script>
+  <script type="text/babel" src="src/components/OktaSession.js"></script>
+  <script type="text/babel" src="src/components/DataManager.js"></script>
+  <script type="text/babel" src="src/components/Navbar.js"></script>
+  <script type="text/babel" src="src/components/VisualizationAudio.js"></script>
+  <script type="text/babel" src="src/components/VisualizationCircle.js"></script>
   
   <!-- Pages -->
   <script type="text/babel" src="src/pages/Login.js"></script>
@@ -65,14 +69,6 @@
   <script type="text/babel" src="src/pages/Profile.js"></script>
   <script type="text/babel" src="src/pages/Settings.js"></script>
   
-  <!-- Other Components -->
-  <script type="text/babel" src="src/components/DataManager.js"></script>
-  <script type="text/babel" src="src/components/Navbar.js"></script>
-  <script type="text/babel" src="src/components/VisualizationAudio.js"></script>
-  <script type="text/babel" src="src/components/VisualizationCircle.js"></script>
-  <script type="text/babel" src="src/App.js"></script>
-
-  <!-- Initialize App -->
   <script type="text/babel">
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
