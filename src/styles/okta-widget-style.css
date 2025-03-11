@@ -19,9 +19,10 @@
 /* Okta Container */
 #okta-sign-in.auth-container {
   background-color: transparent !important;
-  border: 1px solid var(--neon-purple) !important;
+  border: none !important;
+  /*border: 1px solid var(--neon-purple) !important;*/
   border-radius: 0 !important;
-  box-shadow: 0 0 15px rgba(185, 103, 255, 0.5) !important;
+  /*box-shadow: 0 0 15px rgba(185, 103, 255, 0.5) !important;*/
   font-family: var(--body-font) !important;
   max-width: 500px !important;
   margin: 0 auto !important;
@@ -275,7 +276,8 @@
   text-transform: inherit !important;
 }
 #okta-sign-in .auth-content-inner {
-  background-color: rgba(11, 11, 26, 0.7) !important;
+  background: none !important;
+  /* background-color: rgba(11, 11, 26, 0.7) !important; */
 }
 
 /* Override any Okta default background colors */
