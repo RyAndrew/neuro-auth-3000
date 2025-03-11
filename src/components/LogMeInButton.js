@@ -53,16 +53,16 @@ const LogMeInButton = function(){
     }
         
     //wait 2 seconds to input mfa
-    window.setTimeout(()=>{handleMfaSelector()},2000)
+    window.setTimeout(()=>{handleMfaSelector()},3000)
   }
   function handleMfaSelector(){
-    console.log('handleMfaSelector autofillMfaAndSubmit localWidgetContext', localWidgetContext)
-    console.log('localWidgetContext?.formName', localWidgetContext?.formName)
-    console.log('localWidgetContext?.formName === select-authenticator-authenticate', localWidgetContext?.formName ==='select-authenticator-authenticate')
+    // console.log('handleMfaSelector autofillMfaAndSubmit localWidgetContext', localWidgetContext)
+    // console.log('localWidgetContext?.formName', localWidgetContext?.formName)
+    // console.log('localWidgetContext?.formName === select-authenticator-authenticate', localWidgetContext?.formName ==='select-authenticator-authenticate')
 
-    console.log('handleMfaSelector autofillMfaAndSubmit globalWidgetContext', globalWidgetContext)
-    console.log('globalWidgetContext?.formName', globalWidgetContext?.formName)
-    console.log('globalWidgetContext?.formName === select-authenticator-authenticate', globalWidgetContext?.formName ==='select-authenticator-authenticate')
+    // console.log('handleMfaSelector autofillMfaAndSubmit globalWidgetContext', globalWidgetContext)
+    // console.log('globalWidgetContext?.formName', globalWidgetContext?.formName)
+    // console.log('globalWidgetContext?.formName === select-authenticator-authenticate', globalWidgetContext?.formName ==='select-authenticator-authenticate')
 
       //if you dont have the authenticator cookie set you have to select one first
       if(globalWidgetContext?.formName ==='select-authenticator-authenticate'){
