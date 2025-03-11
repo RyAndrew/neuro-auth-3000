@@ -17,7 +17,8 @@ const TotpButton = ({totpSeed}) => {
       navigator.clipboard.writeText(totpResult);
     }
   };
-  
+  //<i className="bi bi-clipboard"></i>
+              
   return (
     <div className="totp-button container mt-3">
       <div className="row g-2 align-items-center">
@@ -48,9 +49,7 @@ const TotpButton = ({totpSeed}) => {
                 onClick={copyToClipboard}
                 disabled={!totpResult}
                 title="Copy TOTP code"
-              >
-                <i className="bi bi-clipboard"></i>
-              </button>
+              >📋</button>
             </div>
           </div>
         </div>
