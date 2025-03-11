@@ -44,7 +44,7 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 70%);
+  background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 95%);
   z-index: -1;
 }
 
@@ -67,7 +67,9 @@ h1, h2, h3, h4, h5, h6 {
 .neon-text-purple {
   color: var(--neon-purple);
 }
-
+.neuro-auth-app {
+  margin-bottom: 30px;
+}
 /* Header Neon Effects */
 h1.neon-text, h2.neon-text, h3.neon-text, h4.neon-text, h5.neon-text, h6.neon-text {
   text-shadow: 
@@ -592,7 +594,7 @@ pre {
 
   .btn-retro {
     width: 100%;
-    margin-top: 0.5rem;
+    /*margin-top: 0.5rem;*/
   }
 }
 
