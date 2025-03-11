@@ -36,11 +36,15 @@ const App = () => {
   };
   
   return (
-    <AuthProvider>
-      <div>
-        <Navbar />
-        {renderComponent()}
-      </div>
-    </AuthProvider>
+    <div className="neuro-auth-app">
+      <DebugLogProvider>
+        <AuthProvider>
+          <div>
+            <Navbar />
+            {renderComponent()}
+          </div>
+        </AuthProvider>
+      </DebugLogProvider>
+    </div>
   );
 };

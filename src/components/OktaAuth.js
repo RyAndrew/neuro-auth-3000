@@ -21,51 +21,80 @@ const AuthProvider = ({ children }) => {
   const [authState, setAuthState] = React.useState({
     isAuthenticated: false,
     isLoading: true,
-    user: null
+    user: null,
+    tokens: null
   });
   
   const authClient = React.useMemo(() => {
     return new OktaAuth(oktaConfig);
   }, []);
   
+  const { addLog, LOG_TYPES } = useDebugLog();
+  
+  const checkTokens = async () => {
+    try {
+      const tokens = await authClient.tokenManager.getTokens();
+      if (tokens) {
+        addLog(LOG_TYPES.TOKEN_REFRESH, 'Tokens retrieved successfully', {
+          accessTokenExpires: tokens.accessToken?.expiresAt,
+          refreshTokenExpires: tokens.refreshToken?.expiresAt
+        });
+      }
+      return tokens;
+    } catch (error) {
+      addLog(LOG_TYPES.ERROR, 'Error getting tokens', { error: error.message });
+      return null;
+    }
+  };
+  
   React.useEffect(() => {
-    // Check authentication status
-    console.log('okta auth auth provider effect')
+    console.log('okta auth auth provider effect');
     const checkAuthentication = async () => {
       const isAuthenticated = await authClient.isAuthenticated();
       if (isAuthenticated) {
         const user = await authClient.getUser();
-        setAuthState({ isAuthenticated, isLoading: false, user });
+        const tokens = await checkTokens();
+        addLog(LOG_TYPES.INFO, 'User authenticated successfully', {
+          username: user.name,
+          email: user.email
+        });
+        setAuthState({ isAuthenticated, isLoading: false, user, tokens });
       } else {
-        setAuthState({ isAuthenticated, isLoading: false, user: null });
+        addLog(LOG_TYPES.INFO, 'User not authenticated');
+        setAuthState({ isAuthenticated, isLoading: false, user: null, tokens: null });
       }
     };
         
     authClient.authStateManager.subscribe(function (authState) {
-      console.log('authStateManager!',authState)
+      console.log('authStateManager!', authState);
+      addLog(LOG_TYPES.INFO, 'Auth state changed', { newState: authState.status });
       checkAuthentication();
-    })
-    
-    authClient.start()
-    
+    });
+
     // Subscribe to token changes
-    // const tokenListener = authClient.token.on('tokenHasExpired', () => {
-    //   setAuthState({ isAuthenticated: false, isLoading: false, user: null });
-    // });
+    const tokenSubscription = authClient.tokenManager.on('expired', async (key) => {
+      addLog(LOG_TYPES.TOKEN_REFRESH, 'Token expired', { tokenKey: key });
+      const tokens = await checkTokens();
+      setAuthState(prev => ({ ...prev, tokens }));
+    });
+    
+    authClient.start();
     
     return () => {
-      //tokenListener();
+      tokenSubscription();
     };
   }, [authClient]);
   
   const login = async () => {
-    console.log('OktaAuth login')
-    
+    addLog(LOG_TYPES.LOGIN, 'Login attempt initiated');
+    console.log('OktaAuth login');
   };
   
   const logout = async () => {
+    addLog(LOG_TYPES.LOGOUT, 'Logout initiated');
     await authClient.signOut();
-    setAuthState({ isAuthenticated: false, isLoading: false, user: null });
+    addLog(LOG_TYPES.LOGOUT, 'Logout completed successfully');
+    setAuthState({ isAuthenticated: false, isLoading: false, user: null, tokens: null });
   };
   
   const value = {
@@ -81,7 +110,25 @@ const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {children}
-      {currentRoute !== 'settings' && <OktaSession/>}
+      {currentRoute !== 'settings' && !authState.isLoading && (
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-12">
+              <div className="d-flex flex-column flex-sm-row justify-content-between align-items-stretch gap-3">
+                <div className="flex-grow-1" style={{ flex: '1 1 0' }}>
+                  <OktaSession/>
+                </div>
+                <div className="flex-grow-1" style={{ flex: '1 1 0' }}>
+                  <OktaToken/>
+                </div>
+                <div className="flex-grow-1" style={{ flex: '1 1 0' }}>
+                  <DebugLog/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 };

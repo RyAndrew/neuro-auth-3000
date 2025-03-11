@@ -1,0 +1,47 @@
+.debug-log-modal {
+  padding: 0;
+}
+
+.debug-log-modal .modal-body {
+  padding: 0;
+}
+
+.debug-log-dialog {
+  margin: 0;
+}
+
+.debug-log-content {
+  border: none;
+  border-radius: 0;
+}
+
+.debug-log-header {
+  padding: 0.5rem 1rem;
+}
+
+.debug-log-container {
+  /*height: calc(100vh - 140px);*/
+  overflow-y: auto;
+  background-color: #000;
+  padding-bottom: 20px;
+  font-family: monospace;
+}
+
+.debug-log-timestamp {
+  margin-right: 0.5rem;
+}
+
+.debug-log-type {
+  margin-right: 0.5rem;
+}
+
+.debug-log-message {
+  white-space: pre-wrap;
+}
+
+.debug-log-details {
+  margin-left: 1.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.9em;
+  white-space: pre-wrap;
+} 
