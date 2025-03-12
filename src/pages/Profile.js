@@ -35,6 +35,7 @@ const Profile = () => {
               <div className="retro-separator"></div>
               <p className="neon-text-purple">ACCESS LEVEL: ALPHA</p>
               <p className="neon-text">STATUS: ACTIVE</p>
+              <ProfileEditor />
             </div>
           </div>
         </div>

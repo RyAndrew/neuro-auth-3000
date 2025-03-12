@@ -1,0 +1,10 @@
+/* Profile Editor Custom Styles */
+
+.profile-editor-card {
+  border: 2px solid var(--neon-green);
+  box-shadow: 0 0 15px rgba(0, 255, 159, 0.3);
+}
+
+.profile-editor-card:hover {
+  box-shadow: 0 0 25px rgba(0, 255, 159, 0.5);
+} 
