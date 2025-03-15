@@ -12,6 +12,9 @@ const App = () => {
       console.log('handleHashChange',location.hash);
       setRoute(location.hash.replace('#', '') || 'home');
     };
+
+    const rootLoading = document.querySelector('#rootloading');
+    rootLoading.classList.add("hide-element");
     
     addEventListener('hashchange', handleHashChange);
     return () => removeEventListener('hashchange', handleHashChange);

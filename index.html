@@ -13,6 +13,94 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/resources/favicon-16x16.png">
   <link rel="manifest" href="/resources/site.webmanifest">
   
+<style>
+/* Loading Spinner */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+div.quantum-spinner {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+div.spinner-inner {
+  width: 100%;
+  height: 100%;
+  border: 4px solid transparent;
+  border-top-color: var(--neon-purple);
+  border-right-color: var(--neon-blue);
+  border-bottom-color: var(--neon-pink);
+  border-radius: 50%;
+  /*animation: quantum-spin 1.5s linear infinite;*/
+  position: relative;
+}
+
+div.spinner-inner::before,
+div.spinner-inner::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  box-shadow: 0 0 20px var(--neon-purple);
+}
+
+div.spinner-inner::before {
+  width: 80%;
+  height: 80%;
+  border: 3px solid transparent;
+  border-top-color: var(--neon-blue);
+  border-right-color: var(--neon-pink);
+  border-bottom-color: var(--neon-purple);
+  /*animation: quantum-spin 2s linear infinite reverse;*/
+}
+
+div.spinner-text {
+  position: absolute;
+  bottom: -40px;
+  font-family: var(--header-font);
+  font-size: 1rem;
+  letter-spacing: 2px;
+  /*animation: quantum-pulse 2s infinite;*/ 
+}
+
+@keyframes quantum-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes quantum-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.hide-element {
+  display: none;
+}
+</style>
+
+</head>
+<body>
+  <div id="rootloading" class="container mt-4 page-transition">
+    <div class="loading-container">
+      <div class="quantum-spinner">
+        <div class="spinner-inner"></div>
+        <div class="spinner-text neon-text-purple">QUANTUM AUTHENTICATION</div>
+      </div>
+    </div>
+  </div>
+  <div id="root"></div>
+
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet" crossorigin="anonymous">
   
@@ -42,13 +130,11 @@
   <link href="src/styles/DebugLog.css" rel="stylesheet">
   <link href="src/styles/style.css" rel="stylesheet">
   <link href="src/styles/ProfileEditor.css" rel="stylesheet">
+  <link href="src/styles/Visualizer.css" rel="stylesheet">
 
   <script src="lib/cbor.js"></script>
   <script src="lib/totp.js"></script>
   <script src="lib/util.js"></script>
-</head>
-<body>
-  <div id="root"></div>
   
   <script type="text/babel" src="config.js"></script>
   <script type="text/babel" src="src/App.js"></script>
