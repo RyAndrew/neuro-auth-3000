@@ -1,6 +1,8 @@
 const VisualizationCircle = () => {
   const sketchRef = React.useRef(null);
   const p5Ref = React.useRef(null);
+  
+  // State values for controls
   const [wavelength, setWavelength] = React.useState(128);
   const [velocity, setVelocity] = React.useState(0.5);
   const [amplitude, setAmplitude] = React.useState(0.8);
@@ -8,6 +10,8 @@ const VisualizationCircle = () => {
   const [undulateWavelength, setUndulateWavelength] = React.useState(true);
   const [undulateVelocity, setUndulateVelocity] = React.useState(false);
   const [undulateAmplitude, setUndulateAmplitude] = React.useState(false);
+  
+  // Refs for animation values
   const timeRef = React.useRef(0);
   const settingsRef = React.useRef({ wavelength, velocity, amplitude, clearInterval });
   const lastClearRef = React.useRef(0);
@@ -16,44 +20,91 @@ const VisualizationCircle = () => {
     velocity: Math.random() * 10000,
     amplitude: Math.random() * 10000
   });
-
+  
+  // NEW: Refs to hold actual animated values without triggering re-renders
+  const animatedValuesRef = React.useRef({
+    wavelength: wavelength,
+    velocity: velocity,
+    amplitude: amplitude
+  });
+  
+  // NEW: Animation frame reference for the undulation animation
+  const undulationAnimationRef = React.useRef(null);
+  
+  // Update settings ref when control values change
   React.useEffect(() => {
-    settingsRef.current = { wavelength, velocity, amplitude, clearInterval };
+    settingsRef.current = { 
+      wavelength, 
+      velocity, 
+      amplitude, 
+      clearInterval 
+    };
+    
+    // NEW: Also update the animated values ref
+    animatedValuesRef.current = {
+      wavelength: wavelength,
+      velocity: velocity,
+      amplitude: amplitude
+    };
   }, [wavelength, velocity, amplitude, clearInterval]);
 
-  // Handle undulation animations
+  // Handle undulation animations - OPTIMIZED version
   React.useEffect(() => {
-    let animationFrameId;
+    // Only start animation if any undulation is enabled
+    if (!undulateWavelength && !undulateVelocity && !undulateAmplitude) {
+      return;
+    }
     
-    const updateUndulations = () => {
+    let lastUpdateTime = 0;
+    const UPDATE_INTERVAL = 16; // ~60fps for UI updates
+    
+    const updateUndulations = (timestamp) => {
+      // Calculate undulation values but don't update state every frame
       if (undulateWavelength) {
         undulationRef.current.wavelength += 0.02;
-        const newValue = 128 + Math.sin(undulationRef.current.wavelength) * 127;
-        setWavelength(newValue);
+        animatedValuesRef.current.wavelength = 128 + Math.sin(undulationRef.current.wavelength) * 127;
       }
+      
       if (undulateVelocity) {
         undulationRef.current.velocity += 0.015;
-        const newValue = 1 + Math.sin(undulationRef.current.velocity) * 0.8;
-        setVelocity(newValue);
+        animatedValuesRef.current.velocity = 1 + Math.sin(undulationRef.current.velocity) * 0.8;
       }
+      
       if (undulateAmplitude) {
         undulationRef.current.amplitude += 0.01;
-        const newValue = 0.55 + Math.sin(undulationRef.current.amplitude) * 0.45;
-        setAmplitude(newValue);
+        animatedValuesRef.current.amplitude = 0.55 + Math.sin(undulationRef.current.amplitude) * 0.45;
       }
-
-      if (undulateWavelength || undulateVelocity || undulateAmplitude) {
-        animationFrameId = requestAnimationFrame(updateUndulations);
+      
+      // Only update React state periodically to avoid excessive re-renders
+      if (timestamp - lastUpdateTime > UPDATE_INTERVAL) {
+        lastUpdateTime = timestamp;
+        
+        // Batch state updates
+        if (undulateWavelength) {
+          setWavelength(animatedValuesRef.current.wavelength);
+        }
+        
+        if (undulateVelocity) {
+          setVelocity(animatedValuesRef.current.velocity);
+        }
+        
+        if (undulateAmplitude) {
+          setAmplitude(animatedValuesRef.current.amplitude);
+        }
       }
+      
+      // Continue animation loop
+      undulationAnimationRef.current = requestAnimationFrame(updateUndulations);
     };
-
-    if (undulateWavelength || undulateVelocity || undulateAmplitude) {
-      animationFrameId = requestAnimationFrame(updateUndulations);
-    }
-
+    
+    // Start animation
+    undulationAnimationRef.current = requestAnimationFrame(updateUndulations);
+    
+    // Cleanup function
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+      if (undulationAnimationRef.current) {
+        cancelAnimationFrame(undulationAnimationRef.current);
+        undulationAnimationRef.current = null;
       }
     };
   }, [undulateWavelength, undulateVelocity, undulateAmplitude]);
@@ -89,7 +140,7 @@ const VisualizationCircle = () => {
     p.beginShape();
     for (let i = 0; i < 200; i++) {
       const ang = p.map(i, 0, 200, 0, p.TWO_PI);
-      const baseRadius = Math.min(p.width, p.height) * 0.79 * amplitude;
+      const baseRadius = Math.min(p.width, p.height) * 0.79 * settingsRef.current.amplitude;
       const rad = baseRadius * p.noise(i * 0.01, timeRef.current * 0.005);
       const x = rad * p.cos(ang);
       const y = rad * p.sin(ang);
@@ -114,14 +165,20 @@ const VisualizationCircle = () => {
       };
 
       p.draw = () => {
-        const { wavelength, velocity, amplitude, clearInterval } = settingsRef.current;
+        // Use settings from refs to avoid re-renders affecting animation
+        const { clearInterval } = settingsRef.current;
         
         if (timeRef.current - lastClearRef.current > clearInterval * 20) {
           p.clear();
           lastClearRef.current = timeRef.current;
         }
 
-        p.stroke(wavelength, 200, 255, 15);
+        // NEW: Use the wavelength from animatedValuesRef when undulating
+        const currentWavelength = undulateWavelength 
+          ? animatedValuesRef.current.wavelength 
+          : settingsRef.current.wavelength;
+          
+        p.stroke(currentWavelength, 200, 255, 15);
         p.translate(p.width/2, p.height/2);
         
         // Draw 4 rotated instances
@@ -129,7 +186,12 @@ const VisualizationCircle = () => {
           drawPerlinCircle(p, (p.TWO_PI / 4) * i);
         }
 
-        timeRef.current += velocity;
+        // NEW: Use the velocity from animatedValuesRef when undulating
+        const currentVelocity = undulateVelocity 
+          ? animatedValuesRef.current.velocity 
+          : settingsRef.current.velocity;
+          
+        timeRef.current += currentVelocity;
       };
 
       p.windowResized = () => {
@@ -145,6 +207,7 @@ const VisualizationCircle = () => {
     return () => {
       if (p5Ref.current) {
         p5Ref.current.remove();
+        p5Ref.current = null;
       }
     };
   }, []);
@@ -240,4 +303,4 @@ const VisualizationCircle = () => {
       </div>
     </div>
   );
-}; 
+};
