@@ -14,6 +14,51 @@
   <link rel="manifest" href="/resources/site.webmanifest">
   
 <style>
+
+:root {
+  --neon-pink: #ff00ff;
+  --neon-blue: #00ffff;
+  --neon-purple: #b967ff;
+  --neon-green: #00ff9f;
+  --dark-bg: #0b0b1a;
+  --darker-bg: #050514;
+  --grid-color: rgba(121, 0, 255, 0.2);
+  --header-font: 'Orbitron', sans-serif;
+  --body-font: 'Roboto', sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: none;
+  touch-action: pan-y; /*prevent user scaling*/
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  background-color: var(--dark-bg) !important;
+  color: white;
+  font-family: var(--body-font);
+  margin: 0;
+  background-image: 
+    linear-gradient(0deg, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 25px 25px;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 95%);
+  z-index: -1;
+}
 /* Loading Spinner */
 .loading-container {
   display: flex;
@@ -68,10 +113,19 @@ div.spinner-inner::before {
 div.spinner-text {
   position: absolute;
   bottom: -40px;
-  font-family: var(--header-font);
+  font-family: arial;
+  /*font-family: var(--header-font);*/
+      color: var(--neon-purple);
   font-size: 1rem;
   letter-spacing: 2px;
   /*animation: quantum-pulse 2s infinite;*/ 
+}
+.spinner-text {
+    position: absolute;
+    width: 200%;
+    text-align: center;
+    left: -50%;
+    top: 110%;
 }
 
 @keyframes quantum-spin {
@@ -91,11 +145,11 @@ div.spinner-text {
 
 </head>
 <body>
-  <div id="rootloading" class="container mt-4 page-transition">
+  <div id="rootloading" class="container mt-4">
     <div class="loading-container">
       <div class="quantum-spinner">
         <div class="spinner-inner"></div>
-        <div class="spinner-text neon-text-purple">QUANTUM AUTHENTICATION</div>
+        <div class="spinner-text neon-text-purple">INITIALIZING</div>
       </div>
     </div>
   </div>
