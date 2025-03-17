@@ -1,4 +1,4 @@
-const OktaSession = () => {
+const OktaSessionStatus = () => {
   const [session, setSession] = React.useState(null)
    
   const { authClient, authState } = useAuthContext();

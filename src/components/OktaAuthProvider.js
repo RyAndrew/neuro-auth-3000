@@ -1,4 +1,4 @@
-const AuthContext = React.createContext();
+const OktaAuthContext = React.createContext();
 
 // function addWebAuthnPermissionsPolicy(domain) {
 //   // Create the meta tag element
@@ -13,7 +13,7 @@ const AuthContext = React.createContext();
 // }
 
 // Auth provider component
-const AuthProvider = ({ children }) => {
+const OktaAuthProvider = ({ children }) => {
   // Auth context for managing authentication state
   
   //addWebAuthnPermissionsPolicy(oktaConfig.issuer)
@@ -108,7 +108,7 @@ const AuthProvider = ({ children }) => {
   const currentRoute = location.hash.replace('#', '') || 'home';
   
   return (
-    <AuthContext.Provider value={value}>
+    <OktaAuthContext.Provider value={value}>
       {children}
       {currentRoute !== 'settings' && !authState.isLoading && (
         <div className="container">
@@ -116,24 +116,24 @@ const AuthProvider = ({ children }) => {
             <div className="col-12">
               <div className="d-flex flex-column flex-sm-row justify-content-between align-items-stretch gap-3">
                 <div className="flex-grow-1" style={{ flex: '1 1 0' }}>
-                  <OktaSession/>
+                  <OktaSessionStatus/>
                 </div>
                 <div className="flex-grow-1" style={{ flex: '1 1 0' }}>
                   <OktaToken/>
                 </div>
                 <div className="flex-grow-1" style={{ flex: '1 1 0' }}>
-                  <DebugLog/>
+                  <DebugLogViewer/>
                 </div>
               </div>
             </div>
           </div>
         </div>
       )}
-    </AuthContext.Provider>
+    </OktaAuthContext.Provider>
   );
 };
 
 // Custom hook for using auth context
 const useAuthContext = () => {
-  return React.useContext(AuthContext);
+  return React.useContext(OktaAuthContext);
 };

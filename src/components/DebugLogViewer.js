@@ -1,4 +1,4 @@
-const DebugLog = () => {
+const DebugLogViewer = () => {
   const [showModal, setShowModal] = React.useState(false);
   const { logs, clearLogs } = useDebugLog();
   

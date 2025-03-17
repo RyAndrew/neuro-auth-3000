@@ -41,12 +41,12 @@ const App = () => {
   return (
     <div className="neuro-auth-app">
       <DebugLogProvider>
-        <AuthProvider>
+        <OktaAuthProvider>
           <div>
             <Navbar />
             {renderComponent()}
           </div>
-        </AuthProvider>
+        </OktaAuthProvider>
       </DebugLogProvider>
     </div>
   );
