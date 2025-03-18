@@ -1,7 +1,7 @@
 const widgetActiveContextContext = React.createContext(null)
 
 const Login = () => {
-  const { authState, authClient } = useAuthContext()
+  const { authState, authClient, oktaConfig } = useAuthContext()
   const [widgetActiveContext, setWidgetActiveContext] = React.useState({ loading: true })
   const [postLoginLoading, setPostLoginLoading] = React.useState(false)
   const { addLog, LOG_TYPES } = useDebugLog()
@@ -15,24 +15,20 @@ const Login = () => {
       window.location = window.location.origin + '/#home';
       return;
     }
-  }, [authState.isAuthenticated, authClient, LOG_TYPES]);
+  }, [authState.isAuthenticated, authClient]);
   
   React.useEffect(() => {
     console.log('useEffect once - OktaSignIn');
     addLog(LOG_TYPES.LOGIN, 'Initializing Okta Sign-In widget');
 
     const signIn = new OktaSignIn({
+      ...oktaConfig,
+      authClient: authClient,
       baseUrl: window.location.origin + '/#login',
       el: widgetRef.current,
-      clientId: oktaConfig.clientId,
-      redirectUri: oktaConfig.redirectUri,
       features:{
         autoFocus: false,
-      },
-      authParams: {
-        issuer: oktaConfig.issuer,
-        scopes: oktaConfig.scopes
-      },
+      }
     });
     
     signIn.on('afterRender', function (context) {
@@ -119,7 +115,7 @@ const Login = () => {
         });
       }
     };
-  }, [LOG_TYPES]);
+  }, []);
   
   function reloadLoginPage(){
     addLog(LOG_TYPES.INFO, 'Reloading login page')
@@ -130,6 +126,8 @@ const Login = () => {
 //   <p className="lead">Initiating biometric verification sequence</p>
 //   <div className="retro-separator"></div>
 // </div>
+  const totpSeed = getTotpSeed()
+
   return (
     <div className="container mt-4 page-transition">
       <div className="row justify-content-center">
@@ -147,7 +145,7 @@ const Login = () => {
               </div>
             ) : (
               <>
-                <LogMeInButton/>
+                <LogMeInButton totpSeed={totpSeed}/>
                 <TotpButton totpSeed={totpSeed}/>
               </>
             )}

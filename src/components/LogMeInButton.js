@@ -1,6 +1,6 @@
 let globalWidgetContext
 
-const LogMeInButton = function(){
+const LogMeInButton = function({totpSeed}){
   
  const widgetContext = React.useContext(widgetActiveContextContext)
  const [localWidgetContext, setLocalWidgetContext] = React.useState(null)

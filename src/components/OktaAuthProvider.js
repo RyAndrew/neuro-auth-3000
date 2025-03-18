@@ -17,6 +17,7 @@ const OktaAuthProvider = ({ children }) => {
   // Auth context for managing authentication state
   
   //addWebAuthnPermissionsPolicy(oktaConfig.issuer)
+  const oktaConfig = getOktaConfig()
 
   const [authState, setAuthState] = React.useState({
     isAuthenticated: false,
@@ -101,7 +102,8 @@ const OktaAuthProvider = ({ children }) => {
     authState,
     authClient,
     login,
-    logout
+    logout,
+    oktaConfig: oktaConfig,
   };
 
   // Get current route from hash
