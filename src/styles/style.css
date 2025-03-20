@@ -184,7 +184,7 @@ h1.neon-text-purple, h2.neon-text-purple, h3.neon-text-purple, h4.neon-text-purp
 
 .home-container-card:hover {
   box-shadow: 0 0 25px rgba(185, 103, 255, 0.5);
-  transform: translateY(-5px);
+  /*transform: translateY(-5px);*/
 }
 
 /* Remove padding from card body containing visualizer */

@@ -77,13 +77,13 @@ const Home = () => {
               </div>
             </div>
             <div className="col-md-4 mb-4">
-              <div className="home-container-card h-100">
+              <div className="home-container-card h-100 quantum-protection-card">
                 <div className="card-body text-center visualizer-card-body">
                   <div className="visualizer-card-content">
                     <h3 className="neon-text-purple">Quantum Protection</h3>
                     <p className="neon-text">Defense matrices guarding your digital identity.</p>
                   </div>
-                  <VisualizationAudio />
+                  <VisualizationTesseract verticalOffsetPercent={20} />
                 </div>
               </div>
             </div>
