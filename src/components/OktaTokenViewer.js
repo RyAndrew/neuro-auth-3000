@@ -1,6 +1,7 @@
 const OktaTokenViewer = () => {
   const { authState, authClient } = useAuthContext();
   const [showModal, setShowModal] = React.useState(false);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [decodedTokens, setDecodedTokens] = React.useState({
     idToken: null,
     accessToken: null,
@@ -91,6 +92,9 @@ const OktaTokenViewer = () => {
 
   const refreshTokens = async () => {
     try {
+      // Set refreshing state to show spinner
+      setIsRefreshing(true);
+      
       // Refresh tokens using authClient
       await authClient.tokenManager.renew('accessToken');
       if (authState.tokens?.idToken) {
@@ -109,6 +113,9 @@ const OktaTokenViewer = () => {
       setDecodedTokens(decoded);
     } catch (error) {
       console.error('Error refreshing tokens:', error);
+    } finally {
+      // Reset refreshing state
+      setIsRefreshing(false);
     }
   };
 
@@ -159,8 +166,16 @@ const OktaTokenViewer = () => {
                   <button
                     className="btn btn-retro btn-retro-success me-2"
                     onClick={refreshTokens}
+                    disabled={isRefreshing}
                   >
-                    🔄 Refresh
+                    {isRefreshing ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Refreshing...
+                      </>
+                    ) : (
+                      <>🔄 Refresh</>
+                    )}
                   </button>
                   <button
                     className="btn btn-retro btn-retro-secondary"
