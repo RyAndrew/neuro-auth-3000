@@ -121,7 +121,7 @@ const OktaAuthProvider = ({ children }) => {
                   <OktaSessionStatus/>
                 </div>
                 <div className="flex-grow-1" style={{ flex: '1 1 0' }}>
-                  <OktaToken/>
+                  <OktaTokenViewer/>
                 </div>
                 <div className="flex-grow-1" style={{ flex: '1 1 0' }}>
                   <DebugLogViewer/>
