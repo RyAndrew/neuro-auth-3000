@@ -18,6 +18,25 @@ const OktaTokenViewer = () => {
     return util.convertUtcStringToDateTimeString(date.toISOString());
   };
 
+  const convertTimeStampToDateTimeString = (timestamp) => {
+    const dateToFormat = new Date(parseInt(timestamp, 10) * 1000);
+    return dateToFormat.toLocaleDateString() + ' ' + dateToFormat.toLocaleTimeString();
+  };
+  
+  const convertClaimsUtcToLocaleDates = (token) => {
+    const timeClaims = ['iat', 'exp', 'expiresAt', 'auth_time'];
+    const formattedToken = {};
+    
+    for (const claim in token) {
+      if (timeClaims.includes(claim)) {
+        formattedToken[claim] = token[claim] + ' (' + convertTimeStampToDateTimeString(token[claim]) + ')';
+      } else {
+        formattedToken[claim] = token[claim];
+      }
+    }
+    return formattedToken;
+  };
+
   const decodeToken = (tokenObj) => {
     if (!tokenObj) return null;
     
@@ -45,8 +64,9 @@ const OktaTokenViewer = () => {
       const payload = parts[1];
       const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
       
-      // Parse the JSON
-      return JSON.parse(decodedPayload);
+      // Parse the JSON and convert timestamps to readable dates
+      const decodedToken = JSON.parse(decodedPayload);
+      return convertClaimsUtcToLocaleDates(decodedToken);
     } catch (error) {
       console.error('Error decoding token:', error);
       return null;
