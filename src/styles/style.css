@@ -414,7 +414,7 @@ pre {
   border: 1px solid var(--neon-pink);
   border-radius: 0;
   color: var(--neon-green);
-  font-family: 'Courier New', monospace;
+  font-family: monospace;
   font-size: 0.9rem;
 }
 

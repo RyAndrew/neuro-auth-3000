@@ -25,6 +25,8 @@ const OktaTokenViewer = () => {
   };
   
   const convertClaimsUtcToLocaleDates = (token) => {
+    if (!token) return null;
+    
     const timeClaims = ['iat', 'exp', 'expiresAt', 'auth_time'];
     const formattedToken = {};
     
@@ -38,56 +40,25 @@ const OktaTokenViewer = () => {
     return formattedToken;
   };
 
-  const decodeToken = (tokenObj) => {
-    if (!tokenObj) return null;
-    
-    // Try to find the token string
-    let tokenStr;
-    if (typeof tokenObj === 'string') {
-      tokenStr = tokenObj;
-    } else if (tokenObj.idToken) {
-      tokenStr = tokenObj.idToken;
-    } else if (tokenObj.accessToken) {
-      tokenStr = tokenObj.accessToken;
-    } else if (tokenObj.refreshToken) {
-      tokenStr = tokenObj.refreshToken;
-    } else {
-      console.error('Unable to determine token string:', tokenObj);
-      return null;
-    }
-    
+  const handleViewTokens = async () => {
     try {
-      // Extract the payload part of the JWT (second part)
-      const parts = tokenStr.split('.');
-      if (parts.length !== 3) return null;
+      // Get tokens from Okta Auth JS
+      const tokens = await authClient.tokenManager.getTokens();
       
-      // Decode the base64 payload
-      const payload = parts[1];
-      const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      // Format token claims with readable dates
+      const decoded = {
+        idToken: tokens.idToken ? convertClaimsUtcToLocaleDates(tokens.idToken.claims) : null,
+        accessToken: tokens.accessToken ? convertClaimsUtcToLocaleDates(tokens.accessToken.claims) : null,
+        refreshToken: tokens.refreshToken ? convertClaimsUtcToLocaleDates({...tokens.refreshToken, expiresAt: tokens.refreshToken.expiresAt}) : null
+      };
       
-      // Parse the JSON and convert timestamps to readable dates
-      const decodedToken = JSON.parse(decodedPayload);
-      return convertClaimsUtcToLocaleDates(decodedToken);
+      setDecodedTokens(decoded);
+      
+      // Show modal
+      setShowModal(true);
     } catch (error) {
-      console.error('Error decoding token:', error);
-      return null;
+      console.error('Error getting tokens:', error);
     }
-  };
-
-  const handleViewTokens = () => {
-    // Decode the tokens
-    const tokens = authState.tokens || {};
-    
-    const decoded = {
-      idToken: tokens.idToken ? decodeToken(tokens.idToken) : null,
-      accessToken: tokens.accessToken ? decodeToken(tokens.accessToken) : null,
-      refreshToken: tokens.refreshToken ? decodeToken(tokens.refreshToken) : null
-    };
-    
-    setDecodedTokens(decoded);
-    
-    // Show modal
-    setShowModal(true);
   };
 
   const refreshTokens = async () => {
@@ -101,13 +72,14 @@ const OktaTokenViewer = () => {
         await authClient.tokenManager.renew('idToken');
       }
       
-      // Update decoded tokens
+      // Get updated tokens
       const tokens = await authClient.tokenManager.getTokens();
       
+      // Format token claims with readable dates
       const decoded = {
-        idToken: tokens.idToken ? decodeToken(tokens.idToken) : null,
-        accessToken: tokens.accessToken ? decodeToken(tokens.accessToken) : null,
-        refreshToken: tokens.refreshToken ? decodeToken(tokens.refreshToken) : null
+        idToken: tokens.idToken ? convertClaimsUtcToLocaleDates(tokens.idToken.claims) : null,
+        accessToken: tokens.accessToken ? convertClaimsUtcToLocaleDates(tokens.accessToken.claims) : null,
+        refreshToken: tokens.refreshToken ? convertClaimsUtcToLocaleDates({...tokens.refreshToken, expiresAt: tokens.refreshToken.expiresAt}) : null
       };
       
       setDecodedTokens(decoded);
