@@ -13,6 +13,17 @@
   */
 }
 
+
+/* Remove padding from card body containing visualizer */
+.visualizer-card-body {
+  padding: 0 !important;
+}
+
+/* Keep padding for the text content above visualizer */
+.visualizer-card-content {
+  padding: 2rem 2rem 0 2rem;
+}
+
 .spectrum {
   display: flex;
   align-items: flex-end;

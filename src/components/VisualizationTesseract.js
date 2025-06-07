@@ -27,32 +27,32 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
   };
 
   // Handle resize to make canvas responsive
-  const handleResize = React.useCallback(() => {
-    if (!canvasRef.current || !containerRef.current) return;
+  // const handleResize = React.useCallback(() => {
+  //   if (!canvasRef.current || !containerRef.current) return;
     
-    // Get the container's dimensions
-    const container = containerRef.current;
-    const rect = container.getBoundingClientRect();
+  //   // Get the container's dimensions
+  //   const container = containerRef.current;
+  //   const rect = container.getBoundingClientRect();
     
-    // Set canvas size to match container
-    canvasRef.current.width = rect.width;
-    canvasRef.current.height = rect.height;
-  }, []);
+  //   // Set canvas size to match container
+  //   canvasRef.current.width = rect.width;
+  //   canvasRef.current.height = rect.height;
+  // }, []);
 
   React.useEffect(() => {
     if (!canvasRef.current) return;
     
     // Initial resize
-    handleResize();
+    //handleResize();
     
     // Add resize listener
-    window.addEventListener('resize', handleResize);
+    //window.addEventListener('resize', handleResize);
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
     // Make scale responsive to container size
-    const getScale = () => Math.min(canvas.width, canvas.height) * 0.35;
+    const getScale = () => Math.min(canvas.width, canvas.height) * 0.4;
     const rotationSpeed = 0.03;
     
     // Tesseract edges (32 edges)
@@ -186,14 +186,14 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
         const colorB = map(Math.sin(angle * 0.3 + edgeZ * edgeW), -1, 1, 180, 255);
         
         // Set stroke weight based on depth
-        const depth = (v1[2] + v2[2]) / 2;
-        const weight = map(depth, -1, 1, 0.8, 2.5);
+        //const depth = (v1[2] + v2[2]) / 2;
+        //const weight = map(depth, -1, 1, 0.8, 1.5);
         
         // Draw the edge
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
-        ctx.lineWidth = weight;
+        ctx.lineWidth = 0.8//weight;
         ctx.strokeStyle = `rgba(${Math.round(colorR)}, ${Math.round(colorG)}, ${Math.round(colorB)}, 0.85)`;
         ctx.stroke();
       }
@@ -216,9 +216,10 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      window.removeEventListener('resize', handleResize);
+      //window.removeEventListener('resize', handleResize);
     };
-  }, [handleResize]);
+//  }, [handleResize]);
+  }, []);
 
   return (
     <div className="tesseract-visualizer-container" ref={containerRef}>

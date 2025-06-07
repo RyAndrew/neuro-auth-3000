@@ -187,16 +187,6 @@ h1.neon-text-purple, h2.neon-text-purple, h3.neon-text-purple, h4.neon-text-purp
   /*transform: translateY(-5px);*/
 }
 
-/* Remove padding from card body containing visualizer */
-.visualizer-card-body {
-  padding: 0 !important;
-}
-
-/* Keep padding for the text content above visualizer */
-.visualizer-card-content {
-  padding: 2rem 2rem 0 2rem;
-}
-
 .card-title {
   color: var(--neon-blue);
   font-family: var(--header-font);
