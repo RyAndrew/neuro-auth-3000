@@ -83,7 +83,7 @@ const Home = () => {
                     <h3 className="neon-text-purple">Quantum Protection</h3>
                     <p className="neon-text">Defense matrices guarding your digital identity.</p>
                   </div>
-                  <VisualizationTesseract verticalOffsetPercent={5} />
+                  <VisualizationTesseract verticalOffsetPercent={17} />
                 </div>
               </div>
             </div>

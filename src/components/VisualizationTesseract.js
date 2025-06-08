@@ -157,7 +157,8 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
       ctx.translate(canvas.width / 2, canvas.height / 2 + verticalOffset);
       
       // Use dynamic scale based on canvas size
-      const scale = getScale();
+      const scale = 125 // getScale();
+      //console.log('scale=',scale)
       
       // Draw each edge
       for (let i = 0; i < edges.length; i++) {
@@ -188,12 +189,14 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
         // Set stroke weight based on depth
         //const depth = (v1[2] + v2[2]) / 2;
         //const weight = map(depth, -1, 1, 0.8, 1.5);
+      //console.log('weight=',weight)
+      const weight = 3
         
         // Draw the edge
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
-        ctx.lineWidth = 0.8//weight;
+        ctx.lineWidth = weight;
         ctx.strokeStyle = `rgba(${Math.round(colorR)}, ${Math.round(colorG)}, ${Math.round(colorB)}, 0.85)`;
         ctx.stroke();
       }
