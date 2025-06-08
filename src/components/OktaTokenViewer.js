@@ -183,7 +183,7 @@ return (
               <div className="token-viewer-container">
                 {/* ID Token */}
                 <div className="mb-4">
-                  <h6 className="neon-text">ID Token</h6>
+                  <h6 className="neon-text p-2">ID Token</h6>
                   {decodedTokens.idToken ? (
                     <pre className="text-light bg-dark p-3 rounded border border-secondary">{JSON.stringify(decodedTokens.idToken, null, 2)}</pre>
                   ) : (
@@ -193,7 +193,7 @@ return (
                 
                 {/* Access Token */}
                 <div className="mb-4">
-                  <h6 className="neon-text">Access Token</h6>
+                  <h6 className="neon-text p-2">Access Token</h6>
                   {decodedTokens.accessToken ? (
                     <pre className="text-light bg-dark p-3 rounded border border-secondary">{JSON.stringify(decodedTokens.accessToken, null, 2)}</pre>
                   ) : (
