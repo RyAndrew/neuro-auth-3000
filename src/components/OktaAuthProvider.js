@@ -1,23 +1,121 @@
 const OktaAuthContext = React.createContext();
 
-// function addWebAuthnPermissionsPolicy(domain) {
-//   // Create the meta tag element
-//   const metaTag = document.createElement('meta');
-  
-//   // Set the required attributes
-//   metaTag.setAttribute('http-equiv', 'Permissions-Policy');
-//   metaTag.setAttribute('content', `publickey-credentials-create=(self "${domain}")`);
-//   console.log('adding meta tag for domain',domain)
-//   // Add the meta tag to the document head
-//   document.head.appendChild(metaTag);
-// }
-
 // Auth provider component
 const OktaAuthProvider = ({ children }) => {
-  // Auth context for managing authentication state
+  // LocalStorage keys for persistence
+  const STORAGE_KEYS = {
+    AUTH_TYPE: 'user-auth-type',
+    AUTH_SERVER: 'user-auth-server'
+  }
+
+  // Valid values for validation
+  const validAuthTypes = ['custom', 'vanilla', 'redirect'];
+  const validAuthServers = ['custom', 'default', 'org'];
+
+  // Store the original config to preserve the original issuer
+  const originalOktaConfig = React.useMemo(() => getOktaConfig(), [])
+
+  // Helper function to get stored value or default
+  const getStoredValue = (key, defaultValue, validValues) => {
+    try {
+      const stored = localStorage.getItem(key);
+      return stored && validValues.includes(stored) ? stored : defaultValue;
+    } catch (error) {
+      console.warn('LocalStorage access failed:', error);
+      return defaultValue;
+    }
+  };
+
+  // Helper function to store value
+  const storeValue = (key, value) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn('LocalStorage write failed:', error);
+    }
+  };
+
+  // Helper function to get query parameters from URL
+  const getQueryParams = () => {
+    const params = new URLSearchParams(location.search || location.hash.split('?')[1] || '');
+    return {
+      type: params.get('type'),
+      authServer: params.get('authServer')
+    };
+  };
+
+  // Initialize from query parameters, then localStorage, then defaults
+  const initializeFromParams = () => {
+    const queryParams = getQueryParams();
+    
+    // Auth Type: Query params → localStorage → default
+    let initialAuthType = 'custom'; // default
+    const storedAuthType = getStoredValue(STORAGE_KEYS.AUTH_TYPE, null, validAuthTypes);
+    if (storedAuthType) {
+      initialAuthType = storedAuthType; // use localStorage
+    }
+    if (queryParams.type && validAuthTypes.includes(queryParams.type)) {
+      initialAuthType = queryParams.type; // query param overrides
+      storeValue(STORAGE_KEYS.AUTH_TYPE, queryParams.type); // persist to localStorage
+    }
+
+    // Auth Server: Query params → localStorage → default  
+    let initialAuthServer = 'custom'; // default
+    const storedAuthServer = getStoredValue(STORAGE_KEYS.AUTH_SERVER, null, validAuthServers);
+    if (storedAuthServer) {
+      initialAuthServer = storedAuthServer; // use localStorage
+    }
+    if (queryParams.authServer && validAuthServers.includes(queryParams.authServer)) {
+      initialAuthServer = queryParams.authServer; // query param overrides
+      storeValue(STORAGE_KEYS.AUTH_SERVER, queryParams.authServer); // persist to localStorage
+    }
+
+    return { initialAuthType, initialAuthServer };
+  };
+
+  // Initialize values from params/localStorage
+  const { initialAuthType, initialAuthServer } = initializeFromParams();
   
-  //addWebAuthnPermissionsPolicy(oktaConfig.issuer)
-  const oktaConfig = getOktaConfig()
+  // Helper function to get base domain from issuer
+  const getBaseDomain = (issuer) => {
+    const url = new URL(issuer)
+    return `${url.protocol}//${url.host}`
+  }
+
+  // Helper function to create config based on auth server
+  const createConfigForAuthServer = (serverType) => {
+    const baseDomain = getBaseDomain(originalOktaConfig.issuer)
+    let newIssuer
+    
+    switch(serverType) {
+      case 'custom':
+        newIssuer = originalOktaConfig.issuer // Original issuer
+        break
+      case 'default':
+        newIssuer = `${baseDomain}/oauth2/default`
+        break
+      case 'org':
+        newIssuer = `${baseDomain}/`
+        break
+      default:
+        newIssuer = originalOktaConfig.issuer
+    }
+    
+    return { ...originalOktaConfig, issuer: newIssuer }
+  }
+
+  // Public method to get config for a specific auth server (for Login component)
+  const getConfigForAuthServer = React.useCallback((serverType) => {
+    return createConfigForAuthServer(serverType);
+  }, []);
+
+  const [currentAuthType, setCurrentAuthType] = React.useState(initialAuthType)
+  const [currentAuthServer, setCurrentAuthServer] = React.useState(initialAuthServer)
+
+  // Initialize config based on determined auth server
+  const [currentOktaConfig, setCurrentOktaConfig] = React.useState(() => {
+    return createConfigForAuthServer(initialAuthServer);
+  })
 
   const [authState, setAuthState] = React.useState({
     isAuthenticated: false,
@@ -26,11 +124,57 @@ const OktaAuthProvider = ({ children }) => {
     tokens: null
   });
   
+  // Recreate authClient when config changes
   const authClient = React.useMemo(() => {
-    return new OktaAuth(oktaConfig);
-  }, []);
+    console.log('Creating new OktaAuth client with config:', currentOktaConfig)
+    return new OktaAuth(currentOktaConfig);
+  }, [currentOktaConfig]);
   
   const { addLog, LOG_TYPES } = useDebugLog();
+  
+  // Method to update auth type
+  const updateAuthType = React.useCallback((newType) => {
+    if (validAuthTypes.includes(newType)) {
+      setCurrentAuthType(newType)
+      storeValue(STORAGE_KEYS.AUTH_TYPE, newType)
+      addLog(LOG_TYPES.INFO, `Auth type updated to: ${newType}`)
+    }
+  }, [addLog, LOG_TYPES])
+
+  // Method to update auth server and recreate config
+  const updateAuthServer = React.useCallback((newServer) => {
+    if (validAuthServers.includes(newServer)) {
+      setCurrentAuthServer(newServer)
+      storeValue(STORAGE_KEYS.AUTH_SERVER, newServer)
+      
+      const newConfig = createConfigForAuthServer(newServer)
+      setCurrentOktaConfig(newConfig)
+      
+      addLog(LOG_TYPES.INFO, `Auth server updated to: ${newServer}`, {
+        newIssuer: newConfig.issuer
+      })
+    }
+  }, [addLog, LOG_TYPES])
+
+  // Method to update the Okta configuration directly (for Login component compatibility)
+  const updateOktaConfig = React.useCallback((newConfig) => {
+    addLog(LOG_TYPES.INFO, 'Updating Okta configuration directly', {
+      oldIssuer: currentOktaConfig.issuer,
+      newIssuer: newConfig.issuer
+    })
+    setCurrentOktaConfig(newConfig)
+  }, [currentOktaConfig.issuer, addLog, LOG_TYPES])
+
+  // Log initialization details
+  React.useEffect(() => {
+    const queryParams = getQueryParams();
+    addLog(LOG_TYPES.INFO, 'OktaAuthProvider initialized', {
+      queryParams,
+      initialAuthType,
+      initialAuthServer,
+      initialIssuer: currentOktaConfig.issuer
+    });
+  }, []); // Run once on mount
   
   const checkTokens = async () => {
     try {
@@ -49,12 +193,14 @@ const OktaAuthProvider = ({ children }) => {
   };
   
   React.useEffect(() => {
-    console.log('okta auth auth provider effect');
+    console.log('okta auth auth provider effect - authClient changed');
+    
     const checkAuthentication = async () => {
       const isAuthenticated = await authClient.isAuthenticated();
       if (isAuthenticated) {
         const user = await authClient.getUser();
         const tokens = await checkTokens();
+        
         addLog(LOG_TYPES.INFO, 'User authenticated successfully', {
           username: user.name,
           email: user.email
@@ -66,7 +212,7 @@ const OktaAuthProvider = ({ children }) => {
       }
     };
         
-    authClient.authStateManager.subscribe(function (authState) {
+    const authStateSubscription = authClient.authStateManager.subscribe(function (authState) {
       console.log('authStateManager!', authState);
       addLog(LOG_TYPES.INFO, 'Auth state changed', { newState: authState.status });
       checkAuthentication();
@@ -79,10 +225,25 @@ const OktaAuthProvider = ({ children }) => {
       setAuthState(prev => ({ ...prev, tokens }));
     });
     
+    // Start the new authClient
+    addLog(LOG_TYPES.INFO, 'Starting new authClient instance');
     authClient.start();
     
     return () => {
-      tokenSubscription();
+      // Properly cleanup the authClient instance
+      addLog(LOG_TYPES.INFO, 'Stopping authClient instance');
+      try {
+        // Remove token subscription
+        if (tokenSubscription) {
+          tokenSubscription();
+        }
+        // Stop the authClient to clean up subscriptions and timers
+        authClient.stop();
+        addLog(LOG_TYPES.INFO, 'AuthClient stopped successfully');
+      } catch (error) {
+        console.error('Error stopping authClient:', error);
+        addLog(LOG_TYPES.ERROR, 'Error stopping authClient', { error: error.message });
+      }
     };
   }, [authClient]);
   
@@ -93,7 +254,44 @@ const OktaAuthProvider = ({ children }) => {
   
   const logout = async () => {
     addLog(LOG_TYPES.LOGOUT, 'Logout initiated');
-    await authClient.signOut();
+    
+    try {
+      // Get the access token to extract the issuer
+      const accessToken = await authClient.tokenManager.get('accessToken');
+      
+      if (accessToken && accessToken.claims && accessToken.claims.iss) {
+        const tokenIssuer = accessToken.claims.iss;
+        
+        if (tokenIssuer !== currentOktaConfig.issuer) {
+          addLog(LOG_TYPES.LOGOUT, 'Token issuer differs from current config, using token issuer for logout', {
+            tokenIssuer: tokenIssuer,
+            currentIssuer: currentOktaConfig.issuer
+          });
+          
+          // Create temporary authClient with token's issuer for logout
+          const logoutConfig = { ...currentOktaConfig, issuer: tokenIssuer };
+          const logoutAuthClient = new OktaAuth(logoutConfig);
+          await logoutAuthClient.signOut();
+        } else {
+          // Issuers match, use current authClient
+          addLog(LOG_TYPES.LOGOUT, 'Token issuer matches current config, using current authClient');
+          await authClient.signOut();
+        }
+      } else {
+        // No access token or issuer claim, use current authClient as fallback
+        addLog(LOG_TYPES.LOGOUT, 'No access token found, using current authClient for logout');
+        await authClient.signOut();
+      }
+    } catch (error) {
+      addLog(LOG_TYPES.ERROR, 'Error during logout process', { error: error.message });
+      // Fallback to current authClient on error
+      try {
+        await authClient.signOut();
+      } catch (fallbackError) {
+        addLog(LOG_TYPES.ERROR, 'Fallback logout also failed', { error: fallbackError.message });
+      }
+    }
+    
     addLog(LOG_TYPES.LOGOUT, 'Logout completed successfully');
     setAuthState({ isAuthenticated: false, isLoading: false, user: null, tokens: null });
   };
@@ -103,7 +301,14 @@ const OktaAuthProvider = ({ children }) => {
     authClient,
     login,
     logout,
-    oktaConfig: oktaConfig,
+    oktaConfig: currentOktaConfig,
+    updateOktaConfig, // Keep for backward compatibility
+    // Configuration management methods
+    currentAuthType,
+    currentAuthServer,
+    updateAuthType,
+    updateAuthServer,
+    getConfigForAuthServer, // Public method to get configs
   };
 
   // Get current route from hash
