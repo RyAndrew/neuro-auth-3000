@@ -25,6 +25,9 @@ const Login = () => {
   const reinitializeWidget = (newConfig, typeValue = currentAuthType) => {
     addLog(LOG_TYPES.INFO, 'Reinitializing Okta widget with new configuration')
     
+    //clear pending transactions
+    authClient.transactionManager.clear()
+
     // Remove existing widget if it exists
     if (signInRef.current) {
       try {
