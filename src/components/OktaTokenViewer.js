@@ -1,32 +1,4 @@
-const refreshTokens = async () => {
-  try {
-    // Set refreshing state to show spinner
-    setIsRefreshing(true);
-    
-    // Refresh tokens using authClient
-    await authClient.tokenManager.renew('accessToken');
-    if (authState.tokens?.idToken) {
-      await authClient.tokenManager.renew('idToken');
-    }
-    
-    // Get updated tokens
-    const tokens = await authClient.tokenManager.getTokens();
-    
-    // Format token claims with readable dates
-    const decoded = {
-      idToken: tokens.idToken ? convertClaimsUtcToLocaleDates(tokens.idToken.claims) : null,
-      accessToken: tokens.accessToken ? convertClaimsUtcToLocaleDates(tokens.accessToken.claims) : null,
-      refreshToken: tokens.refreshToken ? convertClaimsUtcToLocaleDates({...tokens.refreshToken, expiresAt: tokens.refreshToken.expiresAt}) : null
-    };
-    
-    setDecodedTokens(decoded);
-  } catch (error) {
-    console.error('Error refreshing tokens:', error);
-  } finally {
-    // Reset refreshing state
-    setIsRefreshing(false);
-  }
-};const OktaTokenViewer = () => {
+const OktaTokenViewer = () => {
 const { authState, authClient } = useAuthContext();
 const [showModal, setShowModal] = React.useState(false);
 const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -108,40 +80,75 @@ const clearAllTokens = async () => {
   }
 };
 
+const refreshTokens = async () => {
+  try {
+    // Set refreshing state to show spinner
+    setIsRefreshing(true);
+    
+    // Refresh tokens using authClient
+    await authClient.tokenManager.renew('accessToken');
+    if (authState.tokens?.idToken) {
+      await authClient.tokenManager.renew('idToken');
+    }
+    
+    // Get updated tokens
+    const tokens = await authClient.tokenManager.getTokens();
+    
+    // Format token claims with readable dates
+    const decoded = {
+      idToken: tokens.idToken ? convertClaimsUtcToLocaleDates(tokens.idToken.claims) : null,
+      accessToken: tokens.accessToken ? convertClaimsUtcToLocaleDates(tokens.accessToken.claims) : null,
+      refreshToken: tokens.refreshToken ? convertClaimsUtcToLocaleDates({...tokens.refreshToken, expiresAt: tokens.refreshToken.expiresAt}) : null
+    };
+    
+    setDecodedTokens(decoded);
+  } catch (error) {
+    console.error('Error refreshing tokens:', error);
+  } finally {
+    // Reset refreshing state
+    setIsRefreshing(false);
+  }
+};
+
+
 // Use React Fragment to wrap multiple components
 return (
   <>
     <div className="h-100 d-flex flex-column">
       <div className="flex-grow-1 d-flex flex-column">
-        <div className="mb-2">
-          <span className="neon-text">Access Token: </span>
-          {authState.tokens?.accessToken ? (
-            <span className="neon-text-purple">
-              Expires {formatExpiration(authState.tokens.accessToken.expiresAt)}
-            </span>
-          ) : (
-            <span className="neon-text-pink">Not Available</span>
-          )}
-        </div>
-        <div>
-          <span className="neon-text">Refresh Token: </span>
-          {authState.tokens?.refreshToken ? (
-            <span className="neon-text-purple">
-              Expires {formatExpiration(authState.tokens.refreshToken.expiresAt)}
-            </span>
-          ) : (
-            <span className="neon-text-pink">Not Available</span>
-          )}
-        </div>
-        <div className="mt-3">
-          <button 
-            className="btn btn-retro btn-retro-primary w-100" 
-            onClick={handleViewTokens}
-            disabled={!authState.tokens}
-          >
-            Tokens
-          </button>
-        </div>
+        {authState.tokens?.accessToken ? (
+          <div className="mb-2">
+            <span className="neon-text">Access Token: </span>
+              <span className="neon-text-purple">
+                Expires {formatExpiration(authState.tokens.accessToken.expiresAt)}
+              </span>
+          </div>
+        ) : (
+          <></>
+        )}
+        {authState.tokens?.refreshToken ? (
+          <div>
+            <span className="neon-text">Refresh Token: </span>
+              <span className="neon-text-purple">
+                Expires {formatExpiration(authState.tokens.refreshToken.expiresAt)}
+              </span>
+          </div>
+        ) : (
+          <></>
+        )}
+        {authState.tokens?.accessToken ? (
+          <div className="mt-3">
+            <button 
+              className="btn btn-retro btn-retro-primary w-100" 
+              onClick={handleViewTokens}
+              disabled={!authState.tokens}
+            >
+              Tokens
+            </button>
+          </div>
+        ) : (
+          <></>
+        )}
       </div>
     </div>
 
