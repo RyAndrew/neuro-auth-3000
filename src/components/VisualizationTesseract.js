@@ -4,13 +4,30 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
   const animationFrameRef = React.useRef(null);
   const angleRef = React.useRef(0);
   const verticesRef = React.useRef([]);
+  const lastFrameTimeRef = React.useRef(0);
   
+  // Interaction state
+  const interactionRef = React.useRef({
+    isDragging: false,
+    lastX: 0,
+    lastY: 0,
+    velocityX: 0,
+    velocityY: 0,
+    rotationOffsetX: 0,
+    rotationOffsetY: 0,
+    rotationOffsetZ: 0,
+    rotationOffsetW: 0,
+    momentum: 0.95, // Momentum decay factor
+    sensitivity: 0.01 // Drag sensitivity
+  });
+  
+  const targetFPS = 50;
+  const frameInterval = 1000 / targetFPS;
+
   // Initialize vertices of the tesseract
   const initVertices = () => {
     const vertices = [];
     for (let i = 0; i < 16; i++) {
-      // Convert binary representation to determine coordinates
-      // Each vertex is at either -1 or 1 in each dimension
       vertices[i] = [
         ((i & 1) ? 1 : -1),
         ((i & 2) ? 1 : -1),
@@ -26,34 +43,142 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
     return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
   };
 
-  // Handle resize to make canvas responsive
-  // const handleResize = React.useCallback(() => {
-  //   if (!canvasRef.current || !containerRef.current) return;
+  // Get mouse/touch position relative to canvas
+  const getEventPos = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
     
-  //   // Get the container's dimensions
-  //   const container = containerRef.current;
-  //   const rect = container.getBoundingClientRect();
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+    const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
     
-  //   // Set canvas size to match container
-  //   canvasRef.current.width = rect.width;
-  //   canvasRef.current.height = rect.height;
-  // }, []);
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
 
-  React.useEffect(() => {
+  // Handle interaction start (mouse down / touch start)
+  const handleInteractionStart = React.useCallback((e) => {
+    e.preventDefault();
+    const pos = getEventPos(e);
+    const interaction = interactionRef.current;
+    
+    interaction.isDragging = true;
+    interaction.lastX = pos.x;
+    interaction.lastY = pos.y;
+    interaction.velocityX = 0;
+    interaction.velocityY = 0;
+    
+    // Visual feedback - could add canvas cursor change here
+    if (canvasRef.current) {
+      canvasRef.current.style.cursor = 'grabbing';
+    }
+  }, []);
+
+  // Handle interaction move (mouse move / touch move)
+  const handleInteractionMove = React.useCallback((e) => {
+    e.preventDefault();
+    const interaction = interactionRef.current;
+    
+    if (!interaction.isDragging) return;
+    
+    const pos = getEventPos(e);
+    const deltaX = pos.x - interaction.lastX;
+    const deltaY = pos.y - interaction.lastY;
+    
+    // Update velocities for momentum
+    interaction.velocityX = deltaX * interaction.sensitivity;
+    interaction.velocityY = deltaY * interaction.sensitivity;
+    
+    // Update rotation offsets based on drag
+    interaction.rotationOffsetX += deltaX * interaction.sensitivity;
+    interaction.rotationOffsetY += deltaY * interaction.sensitivity;
+    
+    // Add some cross-dimensional rotation for more interesting interaction
+    interaction.rotationOffsetZ += (deltaX * 0.3 + deltaY * 0.2) * interaction.sensitivity;
+    interaction.rotationOffsetW += (deltaX * 0.2 - deltaY * 0.4) * interaction.sensitivity;
+    
+    interaction.lastX = pos.x;
+    interaction.lastY = pos.y;
+  }, []);
+
+  // Handle interaction end (mouse up / touch end)
+  const handleInteractionEnd = React.useCallback((e) => {
+    e.preventDefault();
+    const interaction = interactionRef.current;
+    
+    interaction.isDragging = false;
+    
+    // Visual feedback
+    if (canvasRef.current) {
+      canvasRef.current.style.cursor = 'grab';
+    }
+  }, []);
+
+  // Setup canvas resolution to match CSS display size (for crisp rendering)
+  const setupCanvas = React.useCallback(() => {
     if (!canvasRef.current) return;
-    
-    // Initial resize
-    //handleResize();
-    
-    // Add resize listener
-    //window.addEventListener('resize', handleResize);
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    // Make scale responsive to container size
-    const getScale = () => Math.min(canvas.width, canvas.height) * 0.4;
-    const rotationSpeed = 0.03;
+    // Get the actual rendered size of the canvas (after CSS is applied)
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    
+    // Set internal canvas resolution to match CSS display size
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
+    // Scale the drawing context to account for device pixel ratio
+    ctx.scale(dpr, dpr);
+    
+    // Enable antialiasing for smoother lines
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    // Set line join and cap for better line quality
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    
+    return { width: rect.width, height: rect.height, dpr };
+  }, []);
+
+  // Handle resize to make canvas responsive
+  const handleResize = React.useCallback(() => {
+    setupCanvas();
+  }, [setupCanvas]);
+
+  React.useEffect(() => {
+    if (!canvasRef.current) return;
+    
+    // Initial setup
+    const canvasInfo = setupCanvas();
+    if (!canvasInfo) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Set initial cursor
+    canvas.style.cursor = 'grab';
+    
+    // Add event listeners for mouse interaction
+    canvas.addEventListener('mousedown', handleInteractionStart);
+    canvas.addEventListener('mousemove', handleInteractionMove);
+    canvas.addEventListener('mouseup', handleInteractionEnd);
+    canvas.addEventListener('mouseleave', handleInteractionEnd);
+    
+    // Add event listeners for touch interaction
+    canvas.addEventListener('touchstart', handleInteractionStart, { passive: false });
+    canvas.addEventListener('touchmove', handleInteractionMove, { passive: false });
+    canvas.addEventListener('touchend', handleInteractionEnd, { passive: false });
+    canvas.addEventListener('touchcancel', handleInteractionEnd, { passive: false });
+    
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
+    
+    const baseRotationSpeed = 0.008; // Slower base rotation when not interacting
     
     // Tesseract edges (32 edges)
     const edges = [
@@ -78,27 +203,50 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
     verticesRef.current = initVertices();
 
     // Draw function for animation
-    const draw = () => {
+    const draw = (currentTime) => {
+      // Frame rate limiting for better performance
+      if (currentTime - lastFrameTimeRef.current < frameInterval) {
+        animationFrameRef.current = requestAnimationFrame(draw);
+        return;
+      }
+      lastFrameTimeRef.current = currentTime;
+
+      const rect = canvas.getBoundingClientRect();
+      if (!rect) return;
+      
       // Clear canvas with transparent background
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, rect.width, rect.height);
       
-      // Current angle
-      const angle = angleRef.current;
+      const interaction = interactionRef.current;
       
-      // Rotation angles in different 4D planes
-      const angleXY = angle;
-      const angleXZ = angle * 0.5;
-      const angleXW = angle * 0.3;
-      const angleYZ = angle * 0.2;
-      const angleYW = angle * 0.4;
-      const angleZW = angle * 0.6;
+      // Apply momentum when not dragging
+      if (!interaction.isDragging) {
+        interaction.velocityX *= interaction.momentum;
+        interaction.velocityY *= interaction.momentum;
+        
+        interaction.rotationOffsetX += interaction.velocityX;
+        interaction.rotationOffsetY += interaction.velocityY;
+        interaction.rotationOffsetZ += (interaction.velocityX * 0.3 + interaction.velocityY * 0.2);
+        interaction.rotationOffsetW += (interaction.velocityX * 0.2 - interaction.velocityY * 0.4);
+      }
+      
+      // Current angle (base rotation continues slowly)
+      const baseAngle = angleRef.current;
+      
+      // Combined rotation angles (base + user interaction)
+      const angleXY = baseAngle + interaction.rotationOffsetX;
+      const angleXZ = baseAngle * 0.5 + interaction.rotationOffsetY;
+      const angleXW = baseAngle * 0.3 + interaction.rotationOffsetW * 0.5;
+      const angleYZ = baseAngle * 0.2 + interaction.rotationOffsetZ * 0.3;
+      const angleYW = baseAngle * 0.4 + interaction.rotationOffsetX * 0.4;
+      const angleZW = baseAngle * 0.6 + interaction.rotationOffsetW;
       
       // Projected vertices
       const projected3D = [];
       
       // First, rotate in 4D and project to 3D
       for (let i = 0; i < verticesRef.current.length; i++) {
-        const v = verticesRef.current[i].slice(); // Copy the vertex
+        const v = verticesRef.current[i].slice();
         
         // Apply 4D rotations on various planes
         
@@ -153,14 +301,13 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
       ctx.save();
       
       // Translate to center of canvas with vertical offset
-      const verticalOffset = (canvas.height * verticalOffsetPercent) / 100;
-      ctx.translate(canvas.width / 2, canvas.height / 2 + verticalOffset);
+      const verticalOffset = (rect.height * verticalOffsetPercent) / 100;
+      ctx.translate(rect.width / 2, rect.height / 2 + verticalOffset);
       
-      // Use dynamic scale based on canvas size
-      const scale = 125 // getScale();
-      //console.log('scale=',scale)
+      // Use responsive scale based on canvas size
+      const scale = Math.min(rect.width, rect.height) * 0.4;
       
-      // Draw each edge
+      // Draw each edge with enhanced interactivity effects
       for (let i = 0; i < edges.length; i++) {
         const a = edges[i][0];
         const b = edges[i][1];
@@ -172,40 +319,49 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
         const w1 = 1 / (distance3D - v1[2]);
         const w2 = 1 / (distance3D - v2[2]);
         
-        const x1 = v1[0] * w1 * scale;
-        const y1 = v1[1] * w1 * scale;
-        const x2 = v2[0] * w2 * scale;
-        const y2 = v2[1] * w2 * scale;
+        // Round coordinates to avoid subpixel positioning
+        const x1 = Math.round(v1[0] * w1 * scale);
+        const y1 = Math.round(v1[1] * w1 * scale);
+        const x2 = Math.round(v2[0] * w2 * scale);
+        const y2 = Math.round(v2[1] * w2 * scale);
         
         // Calculate color based on edge's position in 4D space
         const edgeZ = (v1[2] + v2[2]) / 2;
         const edgeW = (verticesRef.current[a][3] + verticesRef.current[b][3]) / 2;
         
-        // Calculate edge color using 4D position - using neon colors to match theme
-        const colorR = map(Math.sin(edgeZ * 0.5 + angle), -1, 1, 80, 230);
-        const colorG = map(Math.cos(edgeW * 0.6 + angle * 1.2), -1, 1, 80, 230);
-        const colorB = map(Math.sin(angle * 0.3 + edgeZ * edgeW), -1, 1, 180, 255);
+        // Enhanced color calculation with interaction feedback
+        const interactionIntensity = Math.min(Math.abs(interaction.velocityX) + Math.abs(interaction.velocityY), 1);
+        const colorBase = interaction.isDragging ? 1.2 : 1.0 + interactionIntensity * 0.3;
         
-        // Set stroke weight based on depth
-        //const depth = (v1[2] + v2[2]) / 2;
-        //const weight = map(depth, -1, 1, 0.8, 1.5);
-      //console.log('weight=',weight)
-      const weight = 3
+        const colorR = map(Math.sin(edgeZ * 0.5 + baseAngle), -1, 1, 80, 230) * colorBase;
+        const colorG = map(Math.cos(edgeW * 0.6 + baseAngle * 1.2), -1, 1, 80, 230) * colorBase;
+        const colorB = map(Math.sin(baseAngle * 0.3 + edgeZ * edgeW), -1, 1, 180, 255) * colorBase;
+        
+        // Set stroke weight based on depth and interaction
+        const depth = (v1[2] + v2[2]) / 2;
+        const baseWeight = map(depth, -1, 1, 1, 2.5);
+        const interactionWeight = interaction.isDragging ? 1.3 : 1.0 + interactionIntensity * 0.2;
+        const weight = baseWeight * interactionWeight;
+        
+        // Enhanced opacity during interaction
+        const baseOpacity = 0.85;
+        const interactionOpacity = interaction.isDragging ? 0.95 : baseOpacity + interactionIntensity * 0.1;
         
         // Draw the edge
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.lineWidth = weight;
-        ctx.strokeStyle = `rgba(${Math.round(colorR)}, ${Math.round(colorG)}, ${Math.round(colorB)}, 0.85)`;
+        ctx.strokeStyle = `rgba(${Math.round(Math.min(colorR, 255))}, ${Math.round(Math.min(colorG, 255))}, ${Math.round(Math.min(colorB, 255))}, ${interactionOpacity})`;
         ctx.stroke();
       }
       
       // Restore the transformation matrix
       ctx.restore();
       
-      // Increment angle for animation
-      angleRef.current += rotationSpeed;
+      // Increment base angle for automatic rotation (slower when interacting)
+      const rotationMultiplier = interaction.isDragging ? 0.3 : 1.0;
+      angleRef.current += baseRotationSpeed * rotationMultiplier;
       
       // Continue animation loop
       animationFrameRef.current = requestAnimationFrame(draw);
@@ -219,10 +375,19 @@ const VisualizationTesseract = ({ verticalOffsetPercent = 20 }) => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      //window.removeEventListener('resize', handleResize);
+      
+      // Remove event listeners
+      canvas.removeEventListener('mousedown', handleInteractionStart);
+      canvas.removeEventListener('mousemove', handleInteractionMove);
+      canvas.removeEventListener('mouseup', handleInteractionEnd);
+      canvas.removeEventListener('mouseleave', handleInteractionEnd);
+      canvas.removeEventListener('touchstart', handleInteractionStart);
+      canvas.removeEventListener('touchmove', handleInteractionMove);
+      canvas.removeEventListener('touchend', handleInteractionEnd);
+      canvas.removeEventListener('touchcancel', handleInteractionEnd);
+      window.removeEventListener('resize', handleResize);
     };
-//  }, [handleResize]);
-  }, []);
+  }, [handleResize, handleInteractionStart, handleInteractionMove, handleInteractionEnd]);
 
   return (
     <div className="tesseract-visualizer-container" ref={containerRef}>
