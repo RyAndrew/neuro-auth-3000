@@ -5,7 +5,8 @@ const OktaAuthProvider = ({ children }) => {
   // LocalStorage keys for persistence
   const STORAGE_KEYS = {
     AUTH_TYPE: 'user-auth-type',
-    AUTH_SERVER: 'user-auth-server'
+    AUTH_SERVER: 'user-auth-server',
+    CLASSIC_MODE: 'user-classic-mode'
   }
 
   // Valid values for validation
@@ -32,6 +33,17 @@ const OktaAuthProvider = ({ children }) => {
       localStorage.setItem(key, value);
     } catch (error) {
       console.warn('LocalStorage write failed:', error);
+    }
+  };
+
+  // Helper function to get stored boolean value or default
+  const getStoredBooleanValue = (key, defaultValue) => {
+    try {
+      const stored = localStorage.getItem(key);
+      return stored !== null ? stored === 'true' : defaultValue;
+    } catch (error) {
+      console.warn('LocalStorage access failed:', error);
+      return defaultValue;
     }
   };
 
@@ -70,11 +82,14 @@ const OktaAuthProvider = ({ children }) => {
       storeValue(STORAGE_KEYS.AUTH_SERVER, queryParams.authServer); // persist to localStorage
     }
 
-    return { initialAuthType, initialAuthServer };
+    // Classic Mode: localStorage → default (no query param support)
+    const initialClassicMode = getStoredBooleanValue(STORAGE_KEYS.CLASSIC_MODE, false); // default false
+
+    return { initialAuthType, initialAuthServer, initialClassicMode };
   };
 
   // Initialize values from params/localStorage
-  const { initialAuthType, initialAuthServer } = initializeFromParams();
+  const { initialAuthType, initialAuthServer, initialClassicMode } = initializeFromParams();
   
   // Helper function to get base domain from issuer
   const getBaseDomain = (issuer) => {
@@ -83,7 +98,7 @@ const OktaAuthProvider = ({ children }) => {
   }
 
   // Helper function to create config based on auth server
-  const createConfigForAuthServer = (serverType) => {
+  const createConfigForAuthServer = (serverType, classicMode = false) => {
     const baseDomain = getBaseDomain(originalOktaConfig.issuer)
     let newIssuer
     
@@ -101,20 +116,28 @@ const OktaAuthProvider = ({ children }) => {
         newIssuer = originalOktaConfig.issuer
     }
     
-    return { ...originalOktaConfig, issuer: newIssuer }
+    const config = { ...originalOktaConfig, issuer: newIssuer }
+    
+    // Add useClassicEngine if classic mode is enabled
+    if (classicMode) {
+      config.useClassicEngine = true
+    }
+    
+    return config
   }
 
   // Public method to get config for a specific auth server (for Login component)
-  const getConfigForAuthServer = React.useCallback((serverType) => {
-    return createConfigForAuthServer(serverType);
+  const getConfigForAuthServer = React.useCallback((serverType, classicMode) => {
+    return createConfigForAuthServer(serverType, classicMode);
   }, []);
 
   const [currentAuthType, setCurrentAuthType] = React.useState(initialAuthType)
   const [currentAuthServer, setCurrentAuthServer] = React.useState(initialAuthServer)
+  const [currentClassicMode, setCurrentClassicMode] = React.useState(initialClassicMode)
 
-  // Initialize config based on determined auth server
+  // Initialize config based on determined auth server and classic mode
   const [currentOktaConfig, setCurrentOktaConfig] = React.useState(() => {
-    return createConfigForAuthServer(initialAuthServer);
+    return createConfigForAuthServer(initialAuthServer, initialClassicMode);
   })
 
   const [authState, setAuthState] = React.useState({
@@ -147,14 +170,28 @@ const OktaAuthProvider = ({ children }) => {
       setCurrentAuthServer(newServer)
       storeValue(STORAGE_KEYS.AUTH_SERVER, newServer)
       
-      const newConfig = createConfigForAuthServer(newServer)
+      const newConfig = createConfigForAuthServer(newServer, currentClassicMode)
       setCurrentOktaConfig(newConfig)
       
       addLog(LOG_TYPES.INFO, `Auth server updated to: ${newServer}`, {
-        newIssuer: newConfig.issuer
+        newIssuer: newConfig.issuer,
+        useClassicEngine: newConfig.useClassicEngine || false
       })
     }
-  }, [addLog, LOG_TYPES])
+  }, [addLog, LOG_TYPES, currentClassicMode])
+
+  // Method to update classic mode and recreate config
+  const updateClassicMode = React.useCallback((newClassicMode) => {
+    setCurrentClassicMode(newClassicMode)
+    storeValue(STORAGE_KEYS.CLASSIC_MODE, newClassicMode.toString())
+    
+    const newConfig = createConfigForAuthServer(currentAuthServer, newClassicMode)
+    setCurrentOktaConfig(newConfig)
+    
+    addLog(LOG_TYPES.INFO, `Classic mode updated to: ${newClassicMode}`, {
+      useClassicEngine: newConfig.useClassicEngine || false
+    })
+  }, [addLog, LOG_TYPES, currentAuthServer])
 
   // Method to update the Okta configuration directly (for Login component compatibility)
   const updateOktaConfig = React.useCallback((newConfig) => {
@@ -172,7 +209,9 @@ const OktaAuthProvider = ({ children }) => {
       queryParams,
       initialAuthType,
       initialAuthServer,
-      initialIssuer: currentOktaConfig.issuer
+      initialClassicMode,
+      initialIssuer: currentOktaConfig.issuer,
+      useClassicEngine: currentOktaConfig.useClassicEngine || false
     });
   }, []); // Run once on mount
   
@@ -306,8 +345,10 @@ const OktaAuthProvider = ({ children }) => {
     // Configuration management methods
     currentAuthType,
     currentAuthServer,
+    currentClassicMode,
     updateAuthType,
     updateAuthServer,
+    updateClassicMode,
     getConfigForAuthServer, // Public method to get configs
   };
 

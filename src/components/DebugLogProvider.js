@@ -46,32 +46,32 @@ const DebugLogProvider = ({ children }) => {
   };
 
   // Override console methods to capture logs
-  React.useEffect(() => {
-    const originalConsoleLog = console.log;
-    const originalConsoleError = console.error;
-    const originalConsoleWarn = console.warn;
+  // React.useEffect(() => {
+  //   const originalConsoleLog = console.log;
+  //   const originalConsoleError = console.error;
+  //   const originalConsoleWarn = console.warn;
     
-    console.log = (...args) => {
-      originalConsoleLog.apply(console, args);
-      addLog(LOG_TYPES.INFO, args.join(' '));
-    };
+  //   console.log = (...args) => {
+  //     originalConsoleLog.apply(console, args);
+  //     addLog(LOG_TYPES.INFO, args.join(' '));
+  //   };
     
-    console.error = (...args) => {
-      originalConsoleError.apply(console, args);
-      addLog(LOG_TYPES.ERROR, args.join(' '));
-    };
+  //   console.error = (...args) => {
+  //     originalConsoleError.apply(console, args);
+  //     addLog(LOG_TYPES.ERROR, args.join(' '));
+  //   };
     
-    console.warn = (...args) => {
-      originalConsoleWarn.apply(console, args);
-      addLog(LOG_TYPES.INFO, args.join(' '));
-    };
+  //   console.warn = (...args) => {
+  //     originalConsoleWarn.apply(console, args);
+  //     addLog(LOG_TYPES.INFO, args.join(' '));
+  //   };
     
-    return () => {
-      console.log = originalConsoleLog;
-      console.error = originalConsoleError;
-      console.warn = originalConsoleWarn;
-    };
-  }, []);
+  //   return () => {
+  //     console.log = originalConsoleLog;
+  //     console.error = originalConsoleError;
+  //     console.warn = originalConsoleWarn;
+  //   };
+  // }, []);
 
   return (
     <DebugLogContext.Provider value={{ logs, addLog, clearLogs, LOG_TYPES }}>

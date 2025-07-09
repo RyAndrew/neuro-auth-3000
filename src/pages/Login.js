@@ -8,8 +8,10 @@ const Login = () => {
     updateOktaConfig,
     currentAuthType,
     currentAuthServer,
+    currentClassicMode,
     updateAuthType,
     updateAuthServer,
+    updateClassicMode,
     getConfigForAuthServer
   } = useAuthContext()
   
@@ -25,9 +27,6 @@ const Login = () => {
   const reinitializeWidget = (newConfig, typeValue = currentAuthType) => {
     addLog(LOG_TYPES.INFO, 'Reinitializing Okta widget with new configuration')
     
-    //clear pending transactions
-    authClient.transactionManager.clear()
-
     // Remove existing widget if it exists
     if (signInRef.current) {
       try {
@@ -280,8 +279,8 @@ const Login = () => {
     updateAuthType(newType) // Use provider method
     addLog(LOG_TYPES.INFO, `Auth type changed to: ${newType}`)
     
-    // Get current configuration from provider for the current auth server
-    const newConfig = getConfigForAuthServer(currentAuthServer)
+    // Get current configuration from provider for the current auth server and classic mode
+    const newConfig = getConfigForAuthServer(currentAuthServer, currentClassicMode)
     
     reinitializeWidget(newConfig, newType)
   }
@@ -292,12 +291,32 @@ const Login = () => {
     addLog(LOG_TYPES.INFO, `Auth server changed to: ${newServer}`)
     
     // Get the new configuration from provider
-    const newConfig = getConfigForAuthServer(newServer)
+    const newConfig = getConfigForAuthServer(newServer, currentClassicMode)
     
     // Update the provider's authClient with new config (if needed for compatibility)
     if (updateOktaConfig) {
       updateOktaConfig(newConfig)
       addLog(LOG_TYPES.INFO, 'Provider authClient updated with new auth server configuration')
+    }
+    
+    // Only reinitialize if not in redirect mode
+    if (currentAuthType !== 'redirect') {
+      reinitializeWidget(newConfig)
+    }
+  }
+
+  const handleClassicModeChange = (e) => {
+    const newClassicMode = e.target.checked
+    updateClassicMode(newClassicMode) // Use provider method - this automatically updates the config
+    addLog(LOG_TYPES.INFO, `Classic mode changed to: ${newClassicMode}`)
+    
+    // Get the new configuration from provider
+    const newConfig = getConfigForAuthServer(currentAuthServer, newClassicMode)
+    
+    // Update the provider's authClient with new config (if needed for compatibility)
+    if (updateOktaConfig) {
+      updateOktaConfig(newConfig)
+      addLog(LOG_TYPES.INFO, 'Provider authClient updated with new classic mode configuration')
     }
     
     // Only reinitialize if not in redirect mode
@@ -394,6 +413,24 @@ const Login = () => {
                     <option value="org">Org</option>
                   </select>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Classic Mode Checkbox */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <div className="form-check">
+                <input 
+                  className="form-check-input" 
+                  type="checkbox" 
+                  id="classicMode"
+                  checked={currentClassicMode}
+                  onChange={handleClassicModeChange}
+                />
+                <label className="form-check-label neon-text" htmlFor="classicMode">
+                  Classic Mode (useClassicEngine)
+                </label>
               </div>
             </div>
           </div>
