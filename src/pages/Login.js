@@ -23,6 +23,15 @@ const Login = () => {
   const widgetRef = React.useRef(null)
   const signInRef = React.useRef(null)
 
+  // Function to handle restart needed callback from LoginTransactionTimer
+  const handleTransactionRestartNeeded = React.useCallback(() => {
+    addLog(LOG_TYPES.INFO, 'Restarting login process after transaction expiration')
+    
+    // Get current configuration and reinitialize widget completely
+    const newConfig = getConfigForAuthServer(currentAuthServer, currentClassicMode)
+    reinitializeWidget(newConfig, currentAuthType)
+  }, [currentAuthServer, currentClassicMode, currentAuthType, getConfigForAuthServer]) // Removed addLog and LOG_TYPES
+
   // Function to reinitialize the widget
   const reinitializeWidget = (newConfig, typeValue = currentAuthType) => {
     addLog(LOG_TYPES.INFO, 'Reinitializing Okta widget with new configuration')
@@ -65,7 +74,7 @@ const Login = () => {
         if(context.formName === "terminal"){
           let errorString = document.querySelector('.o-form-error-container')?.innerHTML
           if(errorString?.includes("You have been logged out due to inactivity")){
-            addLog(LOG_TYPES.LOGOUT, 'Session expired due to inactivity')
+            addLog(LOG_TYPES.LOGOUT, 'Transaction expired due to inactivity')
             reloadLoginPage()
           }
         }
@@ -76,6 +85,7 @@ const Login = () => {
         addLog(LOG_TYPES.LOGIN, 'Sign-in successful', {
           tokenType: Object.keys(result.tokens || {}).join(', ')
         })
+        
         signIn.remove()
         console.log('result.tokens',result.tokens)
         console.log(authClient)
@@ -110,7 +120,7 @@ const Login = () => {
           document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>'+error.xhr.responseText+'</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
           console.log('responseJson',responseJson)
           if(responseJson?.messages?.value[0]?.i18n?.key ==='idx.session.expired'){
-            addLog(LOG_TYPES.LOGOUT, 'Session expired')
+            addLog(LOG_TYPES.LOGOUT, 'Transaction expired')
             authClient.transactionManager.clear()
             reloadLoginPage()
           }
@@ -137,6 +147,7 @@ const Login = () => {
     if (authState.isAuthenticated) {
       addLog(LOG_TYPES.LOGIN, 'Authentication successful, redirecting to home')
       console.log("you're now authenticated!")
+      
       window.location = window.location.origin + '/#home';
       return;
     }
@@ -191,7 +202,7 @@ const Login = () => {
       if(context.formName === "terminal"){
         let errorString = document.querySelector('.o-form-error-container')?.innerHTML
         if(errorString?.includes("You have been logged out due to inactivity")){
-          addLog(LOG_TYPES.LOGOUT, 'Session expired due to inactivity')
+          addLog(LOG_TYPES.LOGOUT, 'Transaction expired due to inactivity')
           reloadLoginPage()
         }
       }
@@ -202,6 +213,7 @@ const Login = () => {
       addLog(LOG_TYPES.LOGIN, 'Sign-in successful', {
         tokenType: Object.keys(result.tokens || {}).join(', ')
       })
+      
       signIn.remove()
       console.log('result.tokens',result.tokens)
       console.log(authClient)
@@ -236,7 +248,7 @@ const Login = () => {
         document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>'+error.xhr.responseText+'</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
         console.log('responseJson',responseJson)
         if(responseJson?.messages?.value[0]?.i18n?.key ==='idx.session.expired'){
-          addLog(LOG_TYPES.LOGOUT, 'Session expired')
+          addLog(LOG_TYPES.LOGOUT, 'Transaction expired')
           authClient.transactionManager.clear()
           reloadLoginPage()
         }
@@ -268,7 +280,7 @@ const Login = () => {
       }
     };
   }, []);
-  
+
   function reloadLoginPage(){
     addLog(LOG_TYPES.INFO, 'Reloading login page')
     window.location = window.location.origin + '/#login';
@@ -338,6 +350,10 @@ const Login = () => {
   }
 
   const totpSeed = getTotpSeed()
+
+  // Calculate if timer should be active
+  const isTimerActive = !widgetActiveContext.loading && 
+                       currentAuthType !== 'redirect'
 
   return (
     <div className="container mt-4 page-transition">
@@ -440,6 +456,15 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      {/* Login Transaction Timer - handles both monitoring and expiration modal */}
+      <LoginTransactionTimer 
+        authClient={authClient}
+        isActive={isTimerActive}
+        onRestartNeeded={handleTransactionRestartNeeded}
+        addLog={addLog}
+        LOG_TYPES={LOG_TYPES}
+      />
     </div>
   );
 };
