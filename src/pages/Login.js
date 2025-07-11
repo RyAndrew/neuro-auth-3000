@@ -353,6 +353,7 @@ const Login = () => {
 
   // Calculate if timer should be active
   const isTimerActive = !widgetActiveContext.loading && 
+                       !postLoginLoading &&
                        currentAuthType !== 'redirect'
 
   return (
