@@ -47,8 +47,11 @@ body {
   position: relative;
   overflow-x: hidden;
   height: 100%;
+  overflow-y: scroll;
 }
-
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
 body::before {
   content: "";
   position: fixed;
@@ -76,11 +79,47 @@ div.quantum-spinner {
   align-items: center;
   justify-content: center;
 }
+#rootloading .quantum-spinner {
+  top: 77px;
+}
 
+@media (max-width: 991.98px) {
+    #rootloading .quantum-spinner {
+      top: 64px;
+    }
+}
+
+.quantum-spinner {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+}
+
+.spinner-inner {
+  position: absolute;
+  border: 3px solid transparent;
+  border-top-color: #00ff00;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-text {
+  position: absolute;
+  width: 200%;
+  text-align: center;
+  left: -50%;
+  top: 110%;
+}
+*, ::after, ::before {
+    box-sizing: border-box;
+}
 div.spinner-inner {
   width: 100%;
   height: 100%;
-  border: 4px solid transparent;
+  border: 3px solid transparent;
   border-top-color: var(--neon-purple);
   border-right-color: var(--neon-blue);
   border-bottom-color: var(--neon-pink);
@@ -111,6 +150,7 @@ div.spinner-inner::before {
 }
 
 div.spinner-text {
+  line-height: 1.5;
   position: absolute;
   bottom: -40px;
   font-family: arial;

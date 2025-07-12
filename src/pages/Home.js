@@ -3,7 +3,7 @@ const Home = () => {
   
   if (authState.isLoading) {
     return (
-      <div className="container mt-4 page-transition">
+      <div className="container mt-4">
         <div className="loading-container">
           <div className="quantum-spinner">
             <div className="spinner-inner"></div>
