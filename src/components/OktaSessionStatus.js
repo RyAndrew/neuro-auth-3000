@@ -36,13 +36,19 @@ const OktaSessionStatus = () => {
         error: err.message
       });
       console.log('Error closing okta session', err)
-      throw err
+      // If session close fails (likely because session never existed), set to null
+      setSession(null)
     })
   }
   
   React.useEffect(() => {
     checkOktaSession()
   }, []);
+  
+  // Re-check session when auth state changes (fixes classic mode login issue)
+  React.useEffect(() => {
+    checkOktaSession()
+  }, [authState.isAuthenticated]);
   
   // Don't render anything while auth state is loading
   if (authState.isLoading) {
