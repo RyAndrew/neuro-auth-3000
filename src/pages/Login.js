@@ -32,6 +32,113 @@ const Login = () => {
     reinitializeWidget(newConfig, currentAuthType)
   }, [currentAuthServer, currentClassicMode, currentAuthType, getConfigForAuthServer]) // Removed addLog and LOG_TYPES
 
+  // Function to create and setup the Okta widget with all event listeners
+  const createAndSetupWidget = (config, typeValue = currentAuthType) => {
+    // If redirect mode, don't create widget
+    if (typeValue === 'redirect') {
+      setWidgetActiveContext({ loading: false })
+      return
+    }
+
+    // Reset widget context to loading state
+    setWidgetActiveContext({ loading: true })
+
+    // Create new widget with provided config
+    //setTimeout(() => {
+      const signIn = new OktaSignIn({
+        ...config,
+        authClient: authClient,
+        //baseUrl: config.issuer,
+        el: widgetRef.current,
+        features: {
+          autoFocus: false,
+        }
+      })
+      
+      signInRef.current = signIn
+      
+      signIn.on('afterRender', function (context) {
+        console.log('signIn on afterRender context', context)
+        addLog(LOG_TYPES.LOGIN, 'Sign-in widget rendered', { formName: context.formName })
+        setWidgetActiveContext({ ...context, loading: false })
+        
+        if (context.formName === "terminal") {
+          let errorString = document.querySelector('.o-form-error-container')?.innerHTML
+          if (errorString?.includes("You have been logged out due to inactivity")) {
+            addLog(LOG_TYPES.LOGOUT, 'Transaction expired due to inactivity')
+            reloadLoginPage()
+          }
+        }
+      })
+
+      signIn.on('afterError', function (context, error) {
+        console.error('Sign-in widget afterError', error, context);
+        addLog(LOG_TYPES.LOGIN, 'Sign-in widget afterError', JSON.stringify(error) + JSON.stringify(context) )
+      });
+
+      signIn.showSignIn().then(function(result) {
+        console.log('showSignIn then', result)
+        addLog(LOG_TYPES.LOGIN, 'Sign-in successful', {
+          tokenType: Object.keys(result.tokens || {}).join(', ')
+        })
+        
+        signIn.remove()
+        console.log('result.tokens', result.tokens)
+        console.log(authClient)
+        authClient.tokenManager.setTokens(result.tokens)
+        setPostLoginLoading(true)
+        window.location = window.location.origin + '/#home';
+      }).catch(async function(error) {
+        console.error(error)
+        console.error('error.name', error.name)
+        addLog(LOG_TYPES.ERROR, `Login error: ${error.name}`, { errorType: error.name })
+        
+        if (error?.name === 'AuthApiError') {
+          console.log('error?.xhr', error?.xhr)
+          addLog(LOG_TYPES.ERROR, 'Authentication API error occurred')
+          
+          if (!error?.xhr?.responseText) {
+            console.log('no auth api error response found')
+            addLog(LOG_TYPES.ERROR, 'No auth API error response found')
+            return
+          }
+          let responseJson
+          try {
+            responseJson = JSON.parse(error.xhr.responseText)
+          } catch (err) {
+            document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>' + error.xhr.responseText + '</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
+            addLog(LOG_TYPES.ERROR, 'Failed to parse error response', {
+              response: error.xhr.responseText
+            })
+            return
+          }
+          
+          document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>' + error.xhr.responseText + '</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
+          console.log('responseJson', responseJson)
+          if (responseJson?.messages?.value[0]?.i18n?.key === 'idx.session.expired') {
+            addLog(LOG_TYPES.LOGOUT, 'Transaction expired')
+            authClient.transactionManager.clear()
+            reloadLoginPage()
+          }
+          console.log('AuthApiError detected :(')
+          authClient.transactionManager.clear()
+          await authClient.idx.cancel()
+          reloadLoginPage()
+          return
+        }
+        
+        if (error?.name === 'CONFIG_ERROR') {
+          addLog(LOG_TYPES.ERROR, 'Configuration error occurred')
+          await authClient.idx.cancel()
+          reloadLoginPage()
+          return
+        }
+        
+        document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>' + error + '</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
+      })
+    //}, 100) // Small delay to ensure DOM is ready
+  }
+
   // Function to reinitialize the widget
   const reinitializeWidget = (newConfig, typeValue = currentAuthType) => {
     addLog(LOG_TYPES.INFO, 'Reinitializing Okta widget with new configuration')
@@ -46,101 +153,8 @@ const Login = () => {
       signInRef.current = null
     }
 
-    // If redirect mode, don't create widget
-    if (typeValue === 'redirect') {
-      setWidgetActiveContext({ loading: false })
-      return
-    }
-
-    // Reset widget context to loading state
-    setWidgetActiveContext({ loading: true })
-
-    // Create new widget with updated config
-    setTimeout(() => {
-      const signIn = new OktaSignIn({
-        ...newConfig,
-        authClient: authClient,
-        baseUrl: window.location.origin + '/#login',
-        el: widgetRef.current,
-      })
-      
-      signInRef.current = signIn
-      
-      signIn.on('afterRender', function (context) {
-        console.log('signIn on afterRender context',context)
-        addLog(LOG_TYPES.LOGIN, 'Sign-in widget rendered', { formName: context.formName })
-        setWidgetActiveContext({ ...context, loading: false })
-        
-        if(context.formName === "terminal"){
-          let errorString = document.querySelector('.o-form-error-container')?.innerHTML
-          if(errorString?.includes("You have been logged out due to inactivity")){
-            addLog(LOG_TYPES.LOGOUT, 'Transaction expired due to inactivity')
-            reloadLoginPage()
-          }
-        }
-      })
-      
-      signIn.showSignIn().then(function(result) {
-        console.log('showSignIn then',result)
-        addLog(LOG_TYPES.LOGIN, 'Sign-in successful', {
-          tokenType: Object.keys(result.tokens || {}).join(', ')
-        })
-        
-        signIn.remove()
-        console.log('result.tokens',result.tokens)
-        console.log(authClient)
-        authClient.tokenManager.setTokens(result.tokens)
-        setPostLoginLoading(true)
-        window.location = window.location.origin + '/#home';
-      }).catch(async function(error) {
-        console.error(error)
-        console.error('error.name',error.name)
-        addLog(LOG_TYPES.ERROR, `Login error: ${error.name}`, { errorType: error.name })
-        
-        if(error?.name === 'AuthApiError'){
-          console.log('error?.xhr',error?.xhr)
-          addLog(LOG_TYPES.ERROR, 'Authentication API error occurred')
-          
-          if(!error?.xhr?.responseText){
-            console.log('no auth api error response found')
-            addLog(LOG_TYPES.ERROR, 'No auth API error response found')
-            return
-          }
-          let responseJson
-          try{
-            responseJson = JSON.parse(error.xhr.responseText)
-          }catch(err){      
-            document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>'+error.xhr.responseText+'</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
-            addLog(LOG_TYPES.ERROR, 'Failed to parse error response', {
-              response: error.xhr.responseText
-            })
-            return
-          }
-          
-          document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>'+error.xhr.responseText+'</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
-          console.log('responseJson',responseJson)
-          if(responseJson?.messages?.value[0]?.i18n?.key ==='idx.session.expired'){
-            addLog(LOG_TYPES.LOGOUT, 'Transaction expired')
-            authClient.transactionManager.clear()
-            reloadLoginPage()
-          }
-          console.log('AuthApiError detected :(')
-          authClient.transactionManager.clear()
-          await authClient.idx.cancel()
-          reloadLoginPage()
-          return
-        }
-        
-        if(error?.name === 'CONFIG_ERROR'){
-          addLog(LOG_TYPES.ERROR, 'Configuration error occurred')
-          await authClient.idx.cancel()
-          reloadLoginPage()
-          return
-        }
-        
-        document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>'+error+'</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
-      })
-    }, 100) // Small delay to ensure DOM is ready
+    // Use the shared creation function
+    createAndSetupWidget(newConfig, typeValue)
   }
 
   React.useEffect(() => {
@@ -177,101 +191,15 @@ const Login = () => {
     }
 
     console.log('app useeffect once authtype=', currentAuthType)
-    if(currentAuthType === 'redirect'){
-      setWidgetActiveContext({ loading: false })
-      return
-    } 
-
-    const signIn = new OktaSignIn({
-      ...oktaConfig,
-      authClient: authClient,
-      baseUrl: window.location.origin + '/#login',
-      el: widgetRef.current,
-      features:{
-        autoFocus: false,
-      }
-    });
     
-    signInRef.current = signIn
-    
-    signIn.on('afterRender', function (context) {
-      console.log('signIn on afterRender context',context)
-      addLog(LOG_TYPES.LOGIN, 'Sign-in widget rendered', { formName: context.formName })
-      setWidgetActiveContext({ ...context, loading: false })
-      
-      if(context.formName === "terminal"){
-        let errorString = document.querySelector('.o-form-error-container')?.innerHTML
-        if(errorString?.includes("You have been logged out due to inactivity")){
-          addLog(LOG_TYPES.LOGOUT, 'Transaction expired due to inactivity')
-          reloadLoginPage()
-        }
-      }
-    })
-    
-    signIn.showSignIn().then(function(result) {
-      console.log('showSignIn then',result)
-      addLog(LOG_TYPES.LOGIN, 'Sign-in successful', {
-        tokenType: Object.keys(result.tokens || {}).join(', ')
-      })
-      
-      signIn.remove()
-      console.log('result.tokens',result.tokens)
-      console.log(authClient)
-      authClient.tokenManager.setTokens(result.tokens)
-      setPostLoginLoading(true)
-      window.location = window.location.origin + '/#home';
-    }).catch(async function(error) {
-      console.error(error)
-      console.error('error.name',error.name)
-      addLog(LOG_TYPES.ERROR, `Login error: ${error.name}`, { errorType: error.name })
-      
-      if(error?.name === 'AuthApiError'){
-        console.log('error?.xhr',error?.xhr)
-        addLog(LOG_TYPES.ERROR, 'Authentication API error occurred')
-        
-        if(!error?.xhr?.responseText){
-          console.log('no auth api error response found')
-          addLog(LOG_TYPES.ERROR, 'No auth API error response found')
-          return
-        }
-        let responseJson
-        try{
-          responseJson = JSON.parse(error.xhr.responseText)
-        }catch(err){      
-          document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>'+error.xhr.responseText+'</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
-          addLog(LOG_TYPES.ERROR, 'Failed to parse error response', {
-            response: error.xhr.responseText
-          })
-          return
-        }
-        
-        document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>'+error.xhr.responseText+'</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
-        console.log('responseJson',responseJson)
-        if(responseJson?.messages?.value[0]?.i18n?.key ==='idx.session.expired'){
-          addLog(LOG_TYPES.LOGOUT, 'Transaction expired')
-          authClient.transactionManager.clear()
-          reloadLoginPage()
-        }
-        console.log('AuthApiError detected :(')
-        authClient.transactionManager.clear()
-        await authClient.idx.cancel()
-        reloadLoginPage()
-        return
-      }
-      
-      if(error?.name === 'CONFIG_ERROR'){
-        addLog(LOG_TYPES.ERROR, 'Configuration error occurred')
-        await authClient.idx.cancel()
-        reloadLoginPage()
-        return
-      }
-      
-      document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>'+error+'</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
-    })
+    // Use the shared creation function
+    createAndSetupWidget(oktaConfig, currentAuthType)
     
     return () => {
       try {
-        signIn.remove();
+        if (signInRef.current) {
+          signInRef.current.remove();
+        }
       } catch (err) {
         console.error('Error removing Okta widget', err);
         addLog(LOG_TYPES.ERROR, 'Error removing Okta widget', {
@@ -351,9 +279,10 @@ const Login = () => {
 
   const totpSeed = getTotpSeed()
 
-  // Calculate if timer should be active
+  // Calculate if timer should be active (not in classic mode, not loading, not redirect)
   const isTimerActive = !widgetActiveContext.loading && 
                        !postLoginLoading &&
+                       !currentClassicMode &&
                        currentAuthType !== 'redirect'
 
   return (
