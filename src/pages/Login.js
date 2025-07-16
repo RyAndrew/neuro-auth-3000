@@ -313,6 +313,25 @@ const Login = () => {
               <>
                 <LogMeInButton totpSeed={totpSeed}/>
                 <TotpButton totpSeed={totpSeed}/>
+                
+                {/* Test Credentials Box */}
+                <div className="card mt-3 mb-3" style={{maxWidth: '400px', margin: '0 auto', backgroundColor: '#1a1a2e', border: '1px solid #00ffff'}}>
+                  <div className="card-body">
+                    <h6 className="card-title mb-2" style={{color: '#00ffff'}}>
+                      <i className="bi bi-info-circle"></i> TEST CREDENTIALS
+                    </h6>
+                    <div className="row">
+                      <div className="col-12">
+                        <p className="mb-1" style={{color: '#ffffff'}}>
+                          <strong>User:</strong> <code style={{color: '#ff6b9d', backgroundColor: '#2a2a3e', padding: '2px 4px', borderRadius: '3px'}}>test@test.com</code>
+                        </p>
+                        <p className="mb-0" style={{color: '#ffffff'}}>
+                          <strong>Password:</strong> <code style={{color: '#ff6b9d', backgroundColor: '#2a2a3e', padding: '2px 4px', borderRadius: '3px'}}>Secret123$</code>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </>
             )}
             {currentAuthType !== 'redirect' && (
