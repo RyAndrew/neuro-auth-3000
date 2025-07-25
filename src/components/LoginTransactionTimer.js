@@ -22,7 +22,7 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
     try {
       // Check if we can proceed with an active transaction
       if (!authClient.idx.canProceed()) {
-        addLog(LOG_TYPES.ERROR, 'Cannot proceed with transaction - showing expiration modal');
+        addLog(LOG_TYPES.ERROR, 'Login Transaction error on canProceed() - misconfiguration likely!');
         stopTransactionTimer();
         handleTransactionExpired();
         return false;
@@ -32,8 +32,8 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
       const transaction = await authClient.idx.proceed();
       
       if (!transaction?.context?.expiresAt) {
-        addLog(LOG_TYPES.ERROR, 'Transaction exists but no expiration timestamp found');
         return true; // Can't determine expiration, assume valid
+        addLog(LOG_TYPES.ERROR, 'Login Transaction exists but expiration timestamp not found');
       }
 
       // Check if transaction has expired
@@ -78,7 +78,7 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
     // Guard clause - don't start if already running or not active
     if (sessionTimerRef.current || !isActive) return;
 
-    addLog(LOG_TYPES.INFO, 'Starting transaction validity timer (checking every 5 seconds)');
+    addLog(LOG_TYPES.INFO, 'Login Transaction validity timer starting (every 5 seconds)');
     sessionTimerRef.current = setInterval(async () => {
       await checkTransactionValidity();
     }, 5000);
@@ -87,10 +87,10 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
   // Auto-start/stop timer based on isActive
   React.useEffect(() => {
     if (isActive) {
-      addLog(LOG_TYPES.INFO, 'Timer conditions met - starting transaction monitoring');
+      addLog(LOG_TYPES.INFO, 'Login Transaction Timer conditions met - starting');
       startTransactionTimer();
     } else {
-      addLog(LOG_TYPES.INFO, 'Timer conditions not met - stopping transaction monitoring');
+      addLog(LOG_TYPES.INFO, 'Login Transaction Timer conditions not met - stopping');
       stopTransactionTimer();
     }
   }, [isActive, startTransactionTimer, stopTransactionTimer]); // Removed addLog and LOG_TYPES
@@ -99,7 +99,7 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && isActive) {
-        addLog(LOG_TYPES.INFO, 'Tab became active - checking transaction validity');
+        addLog(LOG_TYPES.INFO, 'Login Transaction detected visibility change - checking validity');
         checkTransactionValidity();
       }
     };
@@ -119,11 +119,10 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
 
   // Function to handle transaction expired modal login button
   const handleTransactionExpiredLogin = React.useCallback(async () => {
-    addLog(LOG_TYPES.INFO, 'User clicked login after transaction expiration');
+    addLog(LOG_TYPES.INFO, 'Login Transaction - User clicked login after expiration, clearing transaction');
     setShowExpiredModal(false);
     
     // Clean transaction state for fresh restart
-    addLog(LOG_TYPES.INFO, 'Clearing transaction state for fresh restart');
     
     try {
       // Primary: Cancel the IDX transaction on server
@@ -141,7 +140,7 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
       }
     }
     
-    addLog(LOG_TYPES.INFO, 'Requesting widget restart from parent component');
+    addLog(LOG_TYPES.INFO, 'Login Transaction Requesting widget restart');
     
     // Call the restart callback provided by parent component
     if (onRestartNeeded) {
