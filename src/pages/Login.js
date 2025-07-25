@@ -34,6 +34,7 @@ const Login = () => {
 
   // Function to create and setup the Okta widget with all event listeners
   const createAndSetupWidget = (config, typeValue = currentAuthType) => {
+
     // If redirect mode, don't create widget
     if (typeValue === 'redirect') {
       setWidgetActiveContext({ loading: false })
@@ -59,11 +60,11 @@ const Login = () => {
       
       signIn.on('afterRender', function (context) {
         console.log('signIn on afterRender context', context)
-        addLog(LOG_TYPES.LOGIN, 'Sign-in widget rendered', { formName: context.formName })
+        addLog(LOG_TYPES.LOGIN, 'Sign-in widget rendered', context)
         setWidgetActiveContext({ ...context, loading: false })
         
         if (context.formName === "terminal") {
-          let errorString = document.querySelector('.o-form-error-container')?.innerHTML
+          const errorString = document.querySelector('.o-form-error-container')?.innerHTML
           if (errorString?.includes("You have been logged out due to inactivity")) {
             addLog(LOG_TYPES.LOGOUT, 'Transaction expired due to inactivity')
             reloadLoginPage()
@@ -89,52 +90,49 @@ const Login = () => {
         setPostLoginLoading(true)
         window.location = window.location.origin + '/#home';
       }).catch(async function(error) {
+        console.error('ShowSignIn exception! error.name', error.name)
         console.error(error)
-        console.error('error.name', error.name)
-        addLog(LOG_TYPES.ERROR, `Login error: ${error.name}`, { errorType: error.name })
+        //addLog(LOG_TYPES.ERROR, `Login error: ${error.name}`, { errorType: error.name })
         
+        if (error?.name === 'CONFIG_ERROR') {
+          addLog(LOG_TYPES.ERROR, 'Configuration error occurred')
+          //await authClient.idx.cancel()
+          //reloadLoginPage()
+          return
+        }
+
         if (error?.name === 'AuthApiError') {
-          console.log('error?.xhr', error?.xhr)
-          addLog(LOG_TYPES.ERROR, 'Authentication API error occurred')
           
           if (!error?.xhr?.responseText) {
-            console.log('no auth api error response found')
-            addLog(LOG_TYPES.ERROR, 'No auth API error response found')
+            addLog(LOG_TYPES.ERROR, 'Authentication API error occurred. No Error ResponseText found.')
             return
           }
           let responseJson
           try {
             responseJson = JSON.parse(error.xhr.responseText)
           } catch (err) {
-            document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>' + error.xhr.responseText + '</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
-            addLog(LOG_TYPES.ERROR, 'Failed to parse error response', {
-              response: error.xhr.responseText
-            })
+            addLog(LOG_TYPES.ERROR, 'Failed to parse error response', error.xhr.responseText )
             return
           }
           
-          document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>' + error.xhr.responseText + '</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
           console.log('responseJson', responseJson)
           if (responseJson?.messages?.value[0]?.i18n?.key === 'idx.session.expired') {
             addLog(LOG_TYPES.LOGOUT, 'Transaction expired')
             authClient.transactionManager.clear()
             reloadLoginPage()
+            return
           }
-          console.log('AuthApiError detected :(')
-          authClient.transactionManager.clear()
-          await authClient.idx.cancel()
-          reloadLoginPage()
+
+          addLog(LOG_TYPES.ERROR, 'showSignIn exception! ' + (responseJson?.errorCode ? `Error Code: ${responseJson.errorCode} ` : ' ')+(responseJson?.errorSummary ? `Summary: ${responseJson.errorSummary}` : '') )
+          //console.log('AuthApiError detected :(')
+          //authClient.transactionManager.clear()
+          //await authClient.idx.cancel()
+          //reloadLoginPage()
+
           return
         }
         
-        if (error?.name === 'CONFIG_ERROR') {
-          addLog(LOG_TYPES.ERROR, 'Configuration error occurred')
-          await authClient.idx.cancel()
-          reloadLoginPage()
-          return
-        }
-        
-        document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>' + error + '</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
+        //document.getElementById("error").innerHTML = 'Error Logging In! <BR /><B>' + error + '</B><BR />via showSignIn catch error<BR /><button onclick="location.reload()">Refresh Page</button>'
       })
     //}, 100) // Small delay to ensure DOM is ready
   }
@@ -146,7 +144,8 @@ const Login = () => {
     // Remove existing widget if it exists
     if (signInRef.current) {
       try {
-        signInRef.current.remove()
+        signInRef.current.off() //remove all listeners
+        signInRef.current.remove() //remove from dom
       } catch (err) {
         console.error('Error removing existing widget', err)
       }
@@ -170,7 +169,8 @@ const Login = () => {
   
   React.useEffect(() => {
     console.log('useEffect once - OktaSignIn');
-    addLog(LOG_TYPES.LOGIN, 'Initializing Okta Sign-In widget');
+    //console.log('app useeffect once authtype=', currentAuthType)
+    addLog(LOG_TYPES.LOGIN, 'Initializing Okta Sign-In Widget');
 
     // Handle redirect callback - check if this is a redirect from Okta
     if (authClient.isLoginRedirect()) {
@@ -190,7 +190,6 @@ const Login = () => {
       return;
     }
 
-    console.log('app useeffect once authtype=', currentAuthType)
     
     // Use the shared creation function
     createAndSetupWidget(oktaConfig, currentAuthType)
@@ -286,7 +285,7 @@ const Login = () => {
                        currentAuthType !== 'redirect'
 
   return (
-    <div className="container mt-4">
+    <div className="container">
       <div className="row justify-content-center">
         <div className="col-md-8 col-lg-6">
           <widgetActiveContextContext.Provider value={widgetActiveContext}>
@@ -316,7 +315,7 @@ const Login = () => {
                 
                 {/* Test Credentials Box */}
                 <div className="card mt-3 mb-3" style={{maxWidth: '400px', margin: '0 auto', backgroundColor: '#1a1a2e', border: '1px solid #00ffff'}}>
-                  <div className="card-body">
+                  <div className="card-body m-0 p-1">
                     <h6 className="card-title mb-2" style={{color: '#00ffff'}}>
                       <i className="bi bi-info-circle"></i> TEST CREDENTIALS
                     </h6>
@@ -334,10 +333,8 @@ const Login = () => {
                 </div>
               </>
             )}
-            {currentAuthType !== 'redirect' && (
               <div className={currentAuthType === 'custom' ? 'okta-widget-theme-vaporwave' : ''} ref={widgetRef}></div>
-            )}
-            <div id="error"></div>
+            
           </widgetActiveContextContext.Provider>
 
           {/* Authentication Configuration Dropdowns */}
