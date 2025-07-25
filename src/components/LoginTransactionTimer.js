@@ -24,7 +24,7 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
       if (!authClient.idx.canProceed()) {
         addLog(LOG_TYPES.ERROR, 'Login Transaction error on canProceed() - misconfiguration likely!');
         stopTransactionTimer();
-        handleTransactionExpired();
+        //handleTransactionExpired();
         return;
       }
 
@@ -33,6 +33,8 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
       
       if (!transaction?.context?.expiresAt) {
         addLog(LOG_TYPES.ERROR, 'Login Transaction exists but expiration timestamp not found');
+        stopTransactionTimer();
+        //handleTransactionExpired();
         return;
       }
 
