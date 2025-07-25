@@ -160,7 +160,6 @@ const OktaAuthProvider = ({ children }) => {
     if (validAuthTypes.includes(newType)) {
       setCurrentAuthType(newType)
       storeValue(STORAGE_KEYS.AUTH_TYPE, newType)
-      addLog(LOG_TYPES.INFO, `Auth type updated to: ${newType}`)
     }
   }, [addLog, LOG_TYPES])
 
@@ -253,7 +252,7 @@ const OktaAuthProvider = ({ children }) => {
         
     const authStateSubscription = authClient.authStateManager.subscribe(function (authState) {
       console.log('authStateManager!', authState);
-      addLog(LOG_TYPES.INFO, 'Auth state changed', { newState: authState.status });
+      addLog(LOG_TYPES.INFO, 'Auth state changed', authState);
       checkAuthentication();
     });
 
