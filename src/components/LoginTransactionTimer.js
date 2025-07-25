@@ -25,15 +25,15 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
         addLog(LOG_TYPES.ERROR, 'Login Transaction error on canProceed() - misconfiguration likely!');
         stopTransactionTimer();
         handleTransactionExpired();
-        return false;
+        return;
       }
 
       // Get the current transaction state
       const transaction = await authClient.idx.proceed();
       
       if (!transaction?.context?.expiresAt) {
-        return true; // Can't determine expiration, assume valid
         addLog(LOG_TYPES.ERROR, 'Login Transaction exists but expiration timestamp not found');
+        return;
       }
 
       // Check if transaction has expired
@@ -44,7 +44,7 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
         addLog(LOG_TYPES.LOGOUT, `Transaction expired at ${expiresAt.toISOString()}`);
         stopTransactionTimer();
         handleTransactionExpired();
-        return false;
+        return;
       } else {
         const timeRemaining = Math.round((expiresAt - now) / 1000);
         const hours = Math.floor(timeRemaining / 3600);
@@ -53,7 +53,7 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
         const timeFormat = hours > 0 ? `${hours}h ${minutes}m ${seconds}s` : 
                           minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
         addLog(LOG_TYPES.INFO, `Transaction valid - expires in ${timeFormat}`);
-        return true;
+        return;
       }
       
     } catch (error) {
@@ -62,7 +62,7 @@ const LoginTransactionTimer = ({ authClient, isActive, onRestartNeeded, addLog, 
       // Stop timer and show modal on any error
       stopTransactionTimer();
       handleTransactionExpired();
-      return false;
+      return;
     }
   }, [authClient, handleTransactionExpired, stopTransactionTimer]); // Removed addLog and LOG_TYPES
 
