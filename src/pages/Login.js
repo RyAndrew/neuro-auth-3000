@@ -314,7 +314,7 @@ const Login = () => {
                 <TotpButton totpSeed={totpSeed}/>
                 
                 {/* Test Credentials Box */}
-                <div className="card mt-3 mb-3" style={{maxWidth: '400px', margin: '0 auto', backgroundColor: '#1a1a2e', border: '1px solid #00ffff'}}>
+                <div className="test-creds card mt-3 mb-3">
                   <div className="card-body m-0 p-1">
                     <h6 className="card-title mb-2" style={{color: '#00ffff'}}>
                       <i className="bi bi-info-circle"></i> TEST CREDENTIALS

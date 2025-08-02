@@ -18,31 +18,6 @@
   margin: 20px 0;
 }
 
-.quantum-spinner {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  margin: 0 auto;
-}
-
-.spinner-inner {
-  position: absolute;
-  border: 3px solid transparent;
-  border-top-color: #00ff00;
-  border-radius: 50%;
-  width: 100%;
-  height: 100%;
-  animation: spin 1s linear infinite;
-}
-
-.spinner-text {
-  position: absolute;
-  width: 200%;
-  text-align: center;
-  left: -50%;
-  top: 110%;
-}
-
 .retro-login-container {
   /*
   background: rgba(0, 0, 0, 0.8);
@@ -134,4 +109,13 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+div.test-creds {
+  max-width: 400px;
+  margin: 0 auto;
+  background: none;
+  box-shadow: none;
+  border: none;
+  border-left: 3px solid #00ffff;
 }
